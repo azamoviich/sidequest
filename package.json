@@ -1,0 +1,45 @@
+{
+  "name": "waitplay",
+  "version": "0.1.0",
+  "description": "Play a terminal game while any slow command runs. Wrap Claude Code, npm install, docker build — anything.",
+  "type": "module",
+  "bin": {
+    "waitplay": "./dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p .",
+    "dev": "tsx src/cli.ts",
+    "test": "vitest run"
+  },
+  "keywords": [
+    "cli",
+    "terminal",
+    "game",
+    "snake",
+    "claude-code",
+    "productivity",
+    "wrapper"
+  ],
+  "license": "MIT",
+  "author": "",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/azamoviich/waitplay"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "blessed": "^0.1.81"
+  },
+  "devDependencies": {
+    "@types/blessed": "^0.1.25",
+    "@types/node": "^22.0.0",
+    "typescript": "^5.6.0",
+    "tsx": "^4.19.0",
+    "vitest": "^4.1.0"
+  }
+}
