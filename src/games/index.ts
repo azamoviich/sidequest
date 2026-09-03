@@ -29,6 +29,23 @@ import { buildCryptoGame } from "./crypto-engine.js";
 import { generateBase64Puzzle, generateCaesarPuzzle, generateRot13Puzzle, generateHashIdPuzzle } from "./data/crypto-puzzles.js";
 import type { Game } from "./types.js";
 
+export interface GameGroup {
+  kind: "group";
+  id: string;
+  title: string;
+  color: string;
+  // entries can themselves be groups — one extra level of nesting (used for
+  // "Quizzes" containing Trivia + Coding as sub-groups) without generalizing
+  // to arbitrary-depth recursion, which nothing else needs.
+  games: MenuEntry[];
+}
+
+export type MenuEntry = { kind: "game"; game: Game<any> } | GameGroup;
+
+function asEntries(games: Game<any>[]): MenuEntry[] {
+  return games.map((game) => ({ kind: "game", game }));
+}
+
 export const triviaGames: Game<any>[] = [
   buildQuizGame("trivia-mixed", "Mixed", (ctx) => getTriviaQuestions("mixed", ctx.difficulty), historyQuestions),
   buildQuizGame("trivia-movies", "Movies", (ctx) => getTriviaQuestions("movies", ctx.difficulty), historyQuestions),
@@ -70,25 +87,17 @@ export const lessonGames: Game<any>[] = LESSONS.map((lesson) => buildLessonGame(
 
 export const libraryGames: Game<any>[] = LIBRARY_BOOKS.map((book) => buildReaderGame(book));
 
-export interface GameGroup {
-  kind: "group";
-  id: string;
-  title: string;
-  color: string;
-  games: Game<any>[];
-}
-
-export type MenuEntry = { kind: "game"; game: Game<any> } | GameGroup;
+const triviaGroup: GameGroup = { kind: "group", id: "trivia", title: "Trivia (live)", color: "yellow", games: asEntries(triviaGames) };
+const codingGroup: GameGroup = { kind: "group", id: "coding", title: "Coding Quiz", color: "cyan", games: asEntries(codingGames) };
 
 export const menuEntries: MenuEntry[] = [
   { kind: "game", game: dailyChallengeGame },
-  { kind: "group", id: "games", title: "Games", color: "green", games: arcadeGames },
-  { kind: "group", id: "trivia", title: "Trivia Quiz (live)", color: "yellow", games: triviaGames },
-  { kind: "group", id: "coding", title: "Coding Quiz (type the answer)", color: "cyan", games: codingGames },
-  { kind: "group", id: "debug", title: "Spot the Bug", color: "red", games: debugGames },
-  { kind: "group", id: "crypto", title: "Cryptography Puzzles", color: "green", games: cryptoGames },
-  { kind: "group", id: "library", title: "Library (public-domain books)", color: "magenta", games: libraryGames },
-  { kind: "group", id: "learn", title: "Learn Something in 5 Minutes", color: "blue", games: lessonGames },
+  { kind: "group", id: "games", title: "Games", color: "green", games: asEntries(arcadeGames) },
+  { kind: "group", id: "quizzes", title: "Quizzes", color: "yellow", games: [triviaGroup, codingGroup] },
+  { kind: "group", id: "debug", title: "Spot the Bug", color: "red", games: asEntries(debugGames) },
+  { kind: "group", id: "crypto", title: "Cryptography Puzzles", color: "green", games: asEntries(cryptoGames) },
+  { kind: "group", id: "library", title: "Library (public-domain books)", color: "magenta", games: asEntries(libraryGames) },
+  { kind: "group", id: "learn", title: "Learn Something in 5 Minutes", color: "blue", games: asEntries(lessonGames) },
   { kind: "game", game: progressGame },
 ];
 
@@ -96,11 +105,7 @@ export const menuEntries: MenuEntry[] = [
 // regardless of whether it's reached directly or through a group submenu.
 export const games: Game<any>[] = [
   dailyChallengeGame,
-  snakeGame,
-  wordleGame,
-  tictactoeGame,
-  game2048,
-  detectiveGame,
+  ...arcadeGames,
   ...triviaGames,
   ...codingGames,
   ...debugGames,

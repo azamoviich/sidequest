@@ -92,7 +92,7 @@ function rainbowText(text: string): string {
 
 type Mode =
   | { kind: "menu"; index: number }
-  | { kind: "submenu"; group: GameGroup; index: number }
+  | { kind: "submenu"; group: GameGroup; index: number; parent: GameGroup | null }
   | { kind: "settings"; index: number }
   | {
       kind: "game";
@@ -186,8 +186,8 @@ export function runGameUI(opts: RunOptions): void {
     renderSettings();
   };
 
-  const goToSubmenu = (group: GameGroup) => {
-    mode = { kind: "submenu", group, index: 0 };
+  const goToSubmenu = (group: GameGroup, parent: GameGroup | null = null) => {
+    mode = { kind: "submenu", group, index: 0, parent };
     renderSubmenu();
   };
 
@@ -225,7 +225,7 @@ export function runGameUI(opts: RunOptions): void {
             id: "library-search",
             title: `Results for "${value}" (${results.length})`,
             color: "magenta",
-            games: results.map((b) => buildReaderGame(b)),
+            games: results.map((b) => ({ kind: "game", game: buildReaderGame(b) })),
           };
           goToSubmenu(resultGroup);
         })
@@ -375,7 +375,7 @@ export function runGameUI(opts: RunOptions): void {
         label = `${entry.game.title}  {grey-fg}(best: ${best}){/grey-fg}`;
       } else {
         color = entry.color;
-        const best = Math.max(0, ...entry.games.map((g) => getHighScore(g.id)));
+        const best = Math.max(0, ...entry.games.flatMap((e) => (e.kind === "game" ? [getHighScore(e.game.id)] : [])));
         label = `${entry.title}  {grey-fg}(${entry.games.length} categories, best: ${best}) ▸{/grey-fg}`;
       }
       const swatch = `{${color}-bg}  {/${color}-bg}`;
@@ -443,11 +443,17 @@ export function runGameUI(opts: RunOptions): void {
     if (!submenuBody) buildSubmenuFrame(m.group);
 
     const rows: string[] = [];
-    m.group.games.forEach((g, i) => {
+    m.group.games.forEach((entry, i) => {
       const selected = m.index === i;
-      const best = getHighScore(g.id);
-      const label = `${g.title}  {grey-fg}(best: ${best}){/grey-fg}`;
+      let label: string;
       const swatch = `{${m.group.color}-bg}  {/${m.group.color}-bg}`;
+      if (entry.kind === "group") {
+        const best = Math.max(0, ...entry.games.flatMap((e) => (e.kind === "game" ? [getHighScore(e.game.id)] : [])));
+        label = `${entry.title}  {grey-fg}(${entry.games.length}, best: ${best}) ▸{/grey-fg}`;
+      } else {
+        const best = getHighScore(entry.game.id);
+        label = `${entry.game.title}  {grey-fg}(best: ${best}){/grey-fg}`;
+      }
       rows.push(selected ? `{inverse}{bold} ${swatch} ${label} {/bold}{/inverse}` : ` ${swatch} ${label}`);
     });
     rows.push(m.index === m.group.games.length ? "{inverse}{bold} ← Back {/bold}{/inverse}" : " ← Back");
@@ -727,7 +733,8 @@ export function runGameUI(opts: RunOptions): void {
     const isWordleTyping = mode.kind === "game" && mode.game.capturesTextInput && !mode.done;
 
     if (keyName === "escape") {
-      if (mode.kind === "settings" || mode.kind === "game" || mode.kind === "submenu") goToMenu();
+      if (mode.kind === "submenu" && mode.parent) goToSubmenu(mode.parent, null);
+      else if (mode.kind === "settings" || mode.kind === "game" || mode.kind === "submenu") goToMenu();
       return;
     }
 
@@ -769,8 +776,14 @@ export function runGameUI(opts: RunOptions): void {
       if (keyName === "up") mode.index = (mode.index - 1 + count) % count;
       else if (keyName === "down") mode.index = (mode.index + 1) % count;
       else if (keyName === "enter" || keyName === "space") {
-        if (mode.index === mode.group.games.length) goToMenu();
-        else startGame(mode.group.games[mode.index]);
+        if (mode.index === mode.group.games.length) {
+          if (mode.parent) goToSubmenu(mode.parent, null);
+          else goToMenu();
+        } else {
+          const entry = mode.group.games[mode.index];
+          if (entry.kind === "group") goToSubmenu(entry, mode.group);
+          else startGame(entry.game);
+        }
         return;
       }
       renderSubmenu();
