@@ -59,6 +59,8 @@ const GAME_THEME: Record<string, string> = {
   "crypto-caesar": "green",
   "crypto-rot13": "green",
   "crypto-hashid": "green",
+  tictactoe: "blue",
+  "2048": "yellow",
 };
 
 for (const book of LIBRARY_BOOKS) {
