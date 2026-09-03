@@ -124,4 +124,139 @@ export const LESSONS: Lesson[] = [
     ],
     summary: "You learned that commits are snapshots (not diffs), identified by hashes, and that branches and HEAD are just pointers.",
   },
+  {
+    id: "dns",
+    title: "How DNS Actually Works",
+    steps: [
+      {
+        info: "DNS translates human-readable domain names like example.com into IP addresses computers actually use to route traffic.",
+        question: "What does DNS translate a domain name into?",
+        answers: ["ip address", "an ip address", "ip"],
+      },
+      {
+        info: "Your computer doesn't know every domain's address itself — it asks a resolver, usually run by your ISP or a public service, to look it up.",
+        question: "What's the component that looks up the address on your behalf called?",
+        answers: ["resolver", "a resolver", "dns resolver"],
+      },
+      {
+        info: "If the resolver doesn't already have it cached, it walks a chain: root servers point to TLD servers (like .com), which point to the authoritative server for that specific domain.",
+        question: "What kind of server holds the final, authoritative answer for one specific domain?",
+        answers: ["authoritative server", "authoritative", "authoritative dns server"],
+      },
+      {
+        info: "Once found, the answer is cached for a while (its TTL, time-to-live) so repeated lookups skip the whole chain and just reuse the cached result.",
+        question: "What's the setting called that controls how long a DNS answer stays cached?",
+        answers: ["ttl", "time-to-live", "time to live"],
+      },
+    ],
+    summary: "You learned the resolver → root → TLD → authoritative server chain, and how TTL caching speeds up repeat lookups.",
+  },
+  {
+    id: "big-o",
+    title: "Big O Notation",
+    steps: [
+      {
+        info: "Big O describes how an algorithm's running time grows as input size grows — not the exact speed, just the growth trend.",
+        question: "Does Big O measure exact speed, or growth trend as input grows?",
+        answers: ["growth trend", "growth", "trend"],
+      },
+      {
+        info: "O(1) means constant time — the same number of steps no matter how big the input is, like grabbing an array element by index.",
+        question: "What's it called when an algorithm takes the same time regardless of input size?",
+        answers: ["constant time", "o(1)", "constant"],
+      },
+      {
+        info: "O(n) means linear time — steps grow directly in proportion to input size, like scanning every item in a list once.",
+        question: "If you double the input and the work exactly doubles too, what's that called?",
+        answers: ["linear time", "o(n)", "linear"],
+      },
+      {
+        info: "O(n²) means quadratic time — common in naive nested loops, like comparing every item to every other item. It gets slow fast as n grows.",
+        question: "What's the Big O for a simple nested loop comparing every pair of items?",
+        answers: ["o(n^2)", "o(n²)", "quadratic", "quadratic time"],
+      },
+    ],
+    summary: "You learned to read Big O as a growth trend, and the shapes of O(1), O(n), and O(n²).",
+  },
+  {
+    id: "docker-containers",
+    title: "How Docker Containers Work",
+    steps: [
+      {
+        info: "A container packages an app with everything it needs to run — but unlike a VM, it shares the host machine's kernel instead of running its own.",
+        question: "Does a container run its own kernel, or share the host's?",
+        answers: ["shares the host's", "share the host's", "host's kernel", "shares host kernel"],
+      },
+      {
+        info: "This is why containers start in milliseconds and use far less overhead than a full virtual machine, which has to boot an entire separate OS.",
+        question: "Why do containers start much faster than VMs?",
+        answers: ["no separate os", "share kernel", "shared kernel", "don't boot os", "share the kernel"],
+      },
+      {
+        info: "An image is the read-only blueprint (filesystem + config) a container is created from — you can spin up many containers from one image.",
+        question: "What's the read-only blueprint a container is created from called?",
+        answers: ["image", "an image", "docker image"],
+      },
+      {
+        info: "Containers get isolation through kernel features like namespaces (separate view of processes/network) and cgroups (limits on CPU/memory usage).",
+        question: "Name one of the two kernel features that give containers isolation and resource limits.",
+        answers: ["namespaces", "cgroups", "namespace", "cgroup"],
+      },
+    ],
+    summary: "You learned that containers share the host kernel (unlike VMs), and rely on images, namespaces, and cgroups.",
+  },
+  {
+    id: "rest-apis",
+    title: "REST APIs, Actually Understood",
+    steps: [
+      {
+        info: "REST is a style for designing APIs around resources (nouns, like 'users' or 'orders') manipulated with standard HTTP methods (verbs).",
+        question: "Does REST model an API around resources or around actions/functions?",
+        answers: ["resources", "resource"],
+      },
+      {
+        info: "GET reads a resource without changing it, POST creates a new one, PUT/PATCH updates one, and DELETE removes one.",
+        question: "Which HTTP method is meant to read a resource without modifying it?",
+        answers: ["get"],
+      },
+      {
+        info: "A key REST property is statelessness — the server keeps no memory of previous requests; each request must carry everything needed to understand it.",
+        question: "In one word: what REST property means the server doesn't remember previous requests?",
+        answers: ["stateless", "statelessness"],
+      },
+      {
+        info: "HTTP status codes communicate outcome: 2xx means success, 4xx means the client made a bad request, 5xx means the server itself failed.",
+        question: "A 4xx status code means the problem is on which side — client or server?",
+        answers: ["client", "client side", "client's"],
+      },
+    ],
+    summary: "You learned REST's resource-based design, core HTTP verbs, statelessness, and what 2xx/4xx/5xx status codes mean.",
+  },
+  {
+    id: "memory-stack-heap",
+    title: "Stack vs Heap Memory",
+    steps: [
+      {
+        info: "The stack stores local variables and function call info — it's fast and automatically cleaned up the instant a function returns.",
+        question: "Is the stack cleaned up automatically, or does it need manual freeing?",
+        answers: ["automatically", "automatic", "automatically cleaned up"],
+      },
+      {
+        info: "The heap stores data that needs to outlive a single function call — it's more flexible but slower, and in many languages needs explicit management.",
+        question: "Which region of memory typically holds data meant to outlive one function call?",
+        answers: ["heap", "the heap"],
+      },
+      {
+        info: "Because the stack just moves a pointer up and down for each call/return, allocating on it is essentially free compared to heap allocation.",
+        question: "Which is generally faster to allocate on: the stack or the heap?",
+        answers: ["stack", "the stack"],
+      },
+      {
+        info: "A 'stack overflow' happens when too many nested function calls (often infinite recursion) use up all the space reserved for the stack.",
+        question: "What's usually the cause of a stack overflow crash?",
+        answers: ["infinite recursion", "too many nested calls", "deep recursion", "recursion"],
+      },
+    ],
+    summary: "You learned the stack/heap split: fast auto-cleaned local calls vs. flexible longer-lived allocations, and what causes a stack overflow.",
+  },
 ];

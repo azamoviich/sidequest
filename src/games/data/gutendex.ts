@@ -23,6 +23,19 @@ export const LIBRARY_BOOKS: BookMeta[] = [
   { id: 36, title: "The War of the Worlds", author: "H. G. Wells" },
   { id: 46, title: "A Christmas Carol", author: "Charles Dickens" },
   { id: 35, title: "The Time Machine", author: "H. G. Wells" },
+  { id: 1260, title: "Jane Eyre", author: "Charlotte Brontë" },
+  { id: 768, title: "Wuthering Heights", author: "Emily Brontë" },
+  { id: 1727, title: "The Odyssey", author: "Homer" },
+  { id: 1184, title: "The Count of Monte Cristo", author: "Alexandre Dumas" },
+  { id: 1399, title: "Anna Karenina", author: "Leo Tolstoy" },
+  { id: 2554, title: "Crime and Punishment", author: "Fyodor Dostoyevsky" },
+  { id: 74, title: "The Adventures of Tom Sawyer", author: "Mark Twain" },
+  { id: 120, title: "Treasure Island", author: "Robert Louis Stevenson" },
+  { id: 55, title: "The Wonderful Wizard of Oz", author: "L. Frank Baum" },
+  { id: 43, title: "The Strange Case of Dr. Jekyll and Mr. Hyde", author: "Robert Louis Stevenson" },
+  { id: 5200, title: "Metamorphosis", author: "Franz Kafka" },
+  { id: 219, title: "Heart of Darkness", author: "Joseph Conrad" },
+  { id: 25344, title: "The Scarlet Letter", author: "Nathaniel Hawthorne" },
 ];
 
 const CACHE_DIR = join(homedir(), ".sidequest", "library-cache");
