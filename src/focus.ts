@@ -135,12 +135,41 @@ export function captureWatcherWindow(): void {
 }
 
 /**
- * Brings the watcher window forward. Needed on every "working" event, not
- * just the first one — without this, a game window that's already open (and
- * therefore skipped re-launching to avoid duplicates) never visibly reacts
- * to a *new* prompt; it just silently updates status.json in the background
- * with nothing telling the user to look at it.
+ * Brings the watcher (game) window forward, prefaced by the same "Postpone /
+ * Open Now, 5s auto-confirm" popup as focusOriginWindowWithPrompt — needed on
+ * every "working" event, not just the first one, since a window that's
+ * already open (and therefore skipped re-launching to avoid duplicates)
+ * would otherwise never visibly react to a *new* prompt.
  */
-export function focusWatcherWindow(): void {
-  focusWindow(WATCHER_FILE);
+export function focusWatcherWindowWithPrompt(message: string): void {
+  if (process.platform !== "darwin") return;
+  try {
+    if (!existsSync(WATCHER_FILE)) return;
+    const { terminal, windowId } = JSON.parse(readFileSync(WATCHER_FILE, "utf8"));
+    if (!windowId) return;
+
+    const focusCmd =
+      terminal === "iTerm.app"
+        ? `tell application "iTerm"
+            activate
+            repeat with w in windows
+              if id of w is ${windowId} then select w
+            end repeat
+          end tell`
+        : `tell application "Terminal"
+            activate
+            set index of window id ${windowId} to 1
+          end tell`;
+
+    const escapedMessage = message.replace(/"/g, '\\"');
+    const script = `
+      set dlgResult to display dialog "${escapedMessage}" with title "sidequest" buttons {"Postpone", "Open Now"} default button "Open Now" giving up after 5
+      if (gave up of dlgResult) or (button returned of dlgResult is "Open Now") then
+        ${focusCmd}
+      end if
+    `;
+    spawn("osascript", ["-e", script], { stdio: "ignore", detached: true }).unref();
+  } catch {
+    // the window may have been closed since — nothing to focus
+  }
 }

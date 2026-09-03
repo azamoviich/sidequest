@@ -1,6 +1,6 @@
 import { writeStatus, isWatcherAlive, type AgentStatus } from "./status.js";
 import { openWatcherTerminal } from "./launch-terminal.js";
-import { captureOriginWindow, focusOriginWindowWithPrompt, focusWatcherWindow } from "./focus.js";
+import { captureOriginWindow, focusOriginWindowWithPrompt, focusWatcherWindowWithPrompt } from "./focus.js";
 import { loadConfig } from "./config.js";
 
 const VALID: AgentStatus[] = ["working", "waiting", "done"];
@@ -24,10 +24,11 @@ export function runHookCommand(args: string[]): void {
   if (status === "working") {
     if (isWatcherAlive()) {
       // A watcher's already open (from an earlier prompt) — don't spawn a
-      // duplicate window, but DO bring the existing one forward. Otherwise
+      // duplicate window, but DO bring the existing one forward (behind the
+      // same Postpone/Open Now popup as the finish notification). Otherwise
       // it just silently updates status.json with nothing telling the user
       // to look at it, which is what "the game doesn't open" actually was.
-      focusWatcherWindow();
+      focusWatcherWindowWithPrompt("Open sidequest? — opening in 5s");
     } else {
       // Remember which terminal window this prompt came from *before*
       // opening the watcher window, so "done"/"waiting" can bring focus

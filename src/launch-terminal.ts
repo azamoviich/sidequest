@@ -14,7 +14,7 @@ function detectTerminal(): SupportedTerminal {
   return process.env.TERM_PROGRAM === "iTerm.app" ? "iTerm.app" : "Apple_Terminal";
 }
 
-function scriptFor(terminal: SupportedTerminal, command: string): string {
+function openCommandFor(terminal: SupportedTerminal, command: string): string {
   if (terminal === "iTerm.app") {
     return `
       tell application "iTerm"
@@ -26,6 +26,20 @@ function scriptFor(terminal: SupportedTerminal, command: string): string {
     `;
   }
   return `tell application "Terminal" to do script "${command}"`;
+}
+
+/** Same "Postpone / Open Now, 5s auto-confirm" pattern used for the finish
+ * notification (see focus.ts) — applied here too, so a game window doesn't
+ * just yank itself open the instant you start prompting, with no way to say
+ * "not right now". */
+function withConfirmPrompt(message: string, actionScript: string): string {
+  const escaped = message.replace(/"/g, '\\"');
+  return `
+    set dlgResult to display dialog "${escaped}" with title "sidequest" buttons {"Postpone", "Open Now"} default button "Open Now" giving up after 5
+    if (gave up of dlgResult) or (button returned of dlgResult is "Open Now") then
+      ${actionScript}
+    end if
+  `;
 }
 
 /**
@@ -43,7 +57,8 @@ export function openWatcherTerminal(): { launched: boolean; instructions?: strin
   const terminal = detectTerminal();
 
   if (process.platform === "darwin") {
-    const script = scriptFor(terminal, `node '${cliPath}' watch`);
+    const openCommand = openCommandFor(terminal, `node '${cliPath}' watch`);
+    const script = withConfirmPrompt("Open sidequest? — opening in 5s", openCommand);
     try {
       spawn("osascript", ["-e", script], { stdio: "ignore", detached: true }).unref();
       return { launched: true };
