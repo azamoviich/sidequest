@@ -55,7 +55,7 @@ function loadQuestionsInto(state: QuizState, questions: QuizQuestion[], ctx: Gam
   state.loading = false;
 }
 
-export type QuizSource = QuizQuestion[] | (() => Promise<QuizQuestion[]>);
+export type QuizSource = QuizQuestion[] | ((ctx: GameContext) => Promise<QuizQuestion[]>);
 
 /**
  * `source` can be a static bundled list, or an async fetcher (e.g. a live
@@ -93,7 +93,7 @@ export function buildQuizGame(id: string, title: string, source: QuizSource, fal
       }
 
       base.loading = true;
-      source()
+      source(ctx)
         .then((qs) => {
           if (!qs.length) throw new Error("empty question set");
           loadQuestionsInto(base, qs, ctx);
@@ -101,7 +101,7 @@ export function buildQuizGame(id: string, title: string, source: QuizSource, fal
         .catch(() => {
           if (fallback?.length) {
             loadQuestionsInto(base, fallback, ctx);
-            base.loadNote = "offline — using bundled questions";
+            base.loadNote = "couldn't reach live trivia — using bundled questions";
           } else {
             base.loadNote = "couldn't load questions — check your connection";
           }

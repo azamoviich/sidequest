@@ -33,8 +33,11 @@ const STATUS_LABEL: Record<AgentStatus, string> = {
 const GAME_THEME: Record<string, string> = {
   snake: "green",
   wordle: "magenta",
-  geography: "blue",
-  trivia: "yellow",
+  "trivia-mixed": "yellow",
+  "trivia-movies": "red",
+  "trivia-music": "cyan",
+  "trivia-science": "blue",
+  "trivia-geography": "blue",
 };
 
 const RAINBOW = ["red", "yellow", "green", "cyan", "blue", "magenta"];
@@ -87,7 +90,10 @@ export function runGameUI(opts: RunOptions): void {
   // Kick off Trivia's live fetch immediately, before the user has even
   // looked at the menu — by the time they navigate to it and pick it, it's
   // usually already resolved (or well underway) instead of starting cold.
-  getTriviaQuestions().catch(() => {}); // failure handled by the game's own fallback path when it actually asks
+  // Only prefetch "mixed" (the most commonly picked category) — prefetching
+  // all five would mean five parallel requests on every launch for four the
+  // user probably won't even open this session.
+  getTriviaQuestions("mixed", config.difficulty).catch(() => {}); // failure handled by the game's own fallback path when it actually asks
 
   let commandFinished = false;
   let finishedResult: CommandResult | null = null;
@@ -448,7 +454,22 @@ export function runGameUI(opts: RunOptions): void {
       mode.highScore = hs;
     }
 
+    const isPaused = opts.kind === "watch" && (liveStatus === "waiting" || liveStatus === "done");
+
+    const summary = isPaused
+      ? [
+          liveStatus === "waiting"
+            ? "{yellow-bg}{black-fg}{bold} ⏸ NEEDS YOU {/bold}{/black-fg}{/yellow-bg}"
+            : "{green-bg}{black-fg}{bold} ✓ FINISHED {/bold}{/black-fg}{/green-bg}",
+          "",
+          `You played {bold}${escapeTags(g.title)}{/bold}`,
+          `for ${mode.elapsedSec}s — score ${currentScore}`,
+          "",
+        ]
+      : [];
+
     const lines = [
+      ...summary,
       ...g.sidebar(state),
       "",
       `{bold}Best{/bold}    ${mode.highScore}`,
