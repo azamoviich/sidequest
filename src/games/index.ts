@@ -7,6 +7,7 @@ import { frontendQuestions, backendQuestions, nodejsQuestions, algorithmQuestion
 import { wordleGame } from "./wordle.js";
 import { buildReaderGame } from "./reader.js";
 import { progressGame } from "./progress-screen.js";
+import { dailyChallengeGame } from "./daily-challenge.js";
 import { LIBRARY_BOOKS } from "./data/gutendex.js";
 import type { Game } from "./types.js";
 
@@ -39,6 +40,7 @@ export interface GameGroup {
 export type MenuEntry = { kind: "game"; game: Game<any> } | GameGroup;
 
 export const menuEntries: MenuEntry[] = [
+  { kind: "game", game: dailyChallengeGame },
   { kind: "game", game: snakeGame },
   { kind: "game", game: wordleGame },
   { kind: "group", id: "trivia", title: "Trivia Quiz (live)", color: "yellow", games: triviaGames },
@@ -49,7 +51,7 @@ export const menuEntries: MenuEntry[] = [
 
 // Flat list of every playable game, used for theming/high-score lookups
 // regardless of whether it's reached directly or through a group submenu.
-export const games: Game<any>[] = [snakeGame, wordleGame, ...triviaGames, ...codingGames, ...libraryGames, progressGame];
+export const games: Game<any>[] = [dailyChallengeGame, snakeGame, wordleGame, ...triviaGames, ...codingGames, ...libraryGames, progressGame];
 
 export function getGame(id: string): Game<any> {
   const g = games.find((g) => g.id === id);

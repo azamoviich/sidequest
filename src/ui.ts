@@ -52,6 +52,7 @@ for (const book of LIBRARY_BOOKS) {
   GAME_THEME[`library-${book.id}`] = "magenta";
 }
 GAME_THEME["progress"] = "green";
+GAME_THEME["daily-challenge"] = "yellow";
 
 const RAINBOW = ["red", "yellow", "green", "cyan", "blue", "magenta"];
 
