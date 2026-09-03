@@ -90,7 +90,13 @@ function runWatchMode(): void {
 async function main(): Promise<void> {
   const argv = process.argv.slice(2);
 
-  if (argv[0] === "-h" || argv[0] === "--help") {
+  // Accept "setup"/"--setup"/"-setup" etc. interchangeably — typing a flag-
+  // style dash before a subcommand is a completely reasonable guess, and the
+  // alternative (silently trying to run "--setup" as a shell command) is a
+  // confusing failure mode with no hint about what actually went wrong.
+  const subcommand = argv[0]?.replace(/^-+/, "");
+
+  if (subcommand === "h" || subcommand === "help") {
     printHelp();
     process.exit(0);
   }
@@ -102,17 +108,17 @@ async function main(): Promise<void> {
     return;
   }
 
-  if (argv[0] === "watch") {
+  if (subcommand === "watch") {
     runWatchMode();
     return;
   }
 
-  if (argv[0] === "setup") {
+  if (subcommand === "setup") {
     await runSetupWizard();
     return;
   }
 
-  if (argv[0] === "hook") {
+  if (subcommand === "hook") {
     runHookCommand(argv.slice(1));
     return;
   }

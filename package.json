@@ -1,13 +1,14 @@
 {
   "name": "sidequest-cli",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "Play a terminal game while any slow command runs. Wrap Claude Code, npm install, docker build — anything.",
   "type": "module",
   "bin": {
     "sidequest": "./dist/cli.js"
   },
   "files": [
-    "dist"
+    "dist",
+    "scripts"
   ],
   "scripts": {
     "build": "tsc -p . && chmod +x dist/cli.js",
