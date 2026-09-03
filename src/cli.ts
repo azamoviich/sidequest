@@ -6,6 +6,7 @@ import { runCommand } from "./runner.js";
 import { runGameUI } from "./ui.js";
 import { runHookCommand } from "./hook.js";
 import { runSetupWizard } from "./setup.js";
+import { captureWatcherWindow } from "./focus.js";
 import type { CommandResult } from "./runner.js";
 
 // If something throws inside a blessed render/keypress callback while the
@@ -81,6 +82,10 @@ function runWrapMode(cmdArgs: string[]): void {
 }
 
 function runWatchMode(): void {
+  // Record this terminal window so future hook events (once the watcher is
+  // already alive and we correctly skip opening a duplicate) can still
+  // bring THIS window forward instead of updating status silently unseen.
+  captureWatcherWindow();
   runGameUI({
     kind: "watch",
     onExit: () => process.exit(0),
