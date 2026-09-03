@@ -1,5 +1,6 @@
 import { WORDS } from "./data/words.js";
 import { GUESS_WORDS } from "./data/guess-words.js";
+import { awardXp } from "../progress.js";
 import type { Game, GameContext } from "./types.js";
 
 // GUESS_WORDS (~16k words) already contains every word in the curated WORDS
@@ -146,6 +147,7 @@ export const wordleGame: Game<WordleState> = {
         state.streak += 1;
         state.bestStreak = Math.max(state.bestStreak, state.streak);
         state.sfxEvent = "correct";
+        awardXp(20, "games");
         state.roundOverAt = Date.now() + RESULT_PAUSE_MS;
       } else if (state.guesses.length >= MAX_GUESSES) {
         state.gameOver = true;

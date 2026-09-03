@@ -2,6 +2,7 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { fetchBookText, type BookMeta } from "./data/gutendex.js";
+import { awardXp } from "../progress.js";
 import type { Game, GameContext } from "./types.js";
 
 const PAGE_WIDTH = 58; // fits inside the game canvas with a little margin
@@ -73,7 +74,8 @@ export interface ReaderState {
   error: string | null;
   pages: string[][];
   page: number;
-  savedPage: number;
+  savedPage: number; // page this session started on — shown in the resume prompt, never mutated afterward
+  xpAwardedThroughPage: number; // high-water mark, so paging back and forth can't farm XP
 }
 
 export function buildReaderGame(book: BookMeta): Game<ReaderState> {
@@ -106,6 +108,7 @@ export function buildReaderGame(book: BookMeta): Game<ReaderState> {
         pages: [[]],
         page: savedPage,
         savedPage,
+        xpAwardedThroughPage: savedPage,
       };
       if (state.phase === "loading") startLoading(state);
       return state;
@@ -127,6 +130,12 @@ export function buildReaderGame(book: BookMeta): Game<ReaderState> {
       if (key === "right" || key === "down" || key === "space" || key === "n") {
         if (state.page < state.pages.length - 1) {
           state.page += 1;
+          // only award for genuinely new forward progress, not paging back
+          // and forth to farm XP
+          if (state.page > state.xpAwardedThroughPage) {
+            state.xpAwardedThroughPage = state.page;
+            awardXp(1, "books");
+          }
           saveProgress(state.book.id, state.page);
         }
       } else if (key === "left" || key === "up" || key === "p") {

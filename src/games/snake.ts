@@ -1,4 +1,5 @@
 import { createSnakeState, setDirection, step, type SnakeState } from "../snake.js";
+import { awardXp } from "../progress.js";
 import type { Game, GameContext } from "./types.js";
 
 const GRID_W = 30;
@@ -17,7 +18,12 @@ export const snakeGame: Game<SnakeState> = {
   },
 
   tick(state) {
-    if (!state.gameOver) step(state);
+    if (!state.gameOver) {
+      const wasGameOver = state.gameOver;
+      step(state);
+      if (state.sfxEvent === "eat") awardXp(5, "games");
+      if (state.gameOver && !wasGameOver && state.score > 0) awardXp(2, "games");
+    }
   },
 
   handleKey(state, key) {

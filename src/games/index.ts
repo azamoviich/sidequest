@@ -6,6 +6,7 @@ import { getTriviaQuestions } from "./data/opentdb.js";
 import { frontendQuestions, backendQuestions, nodejsQuestions, algorithmQuestions, gitQuestions } from "./data/coding-typed.js";
 import { wordleGame } from "./wordle.js";
 import { buildReaderGame } from "./reader.js";
+import { progressGame } from "./progress-screen.js";
 import { LIBRARY_BOOKS } from "./data/gutendex.js";
 import type { Game } from "./types.js";
 
@@ -43,11 +44,12 @@ export const menuEntries: MenuEntry[] = [
   { kind: "group", id: "trivia", title: "Trivia Quiz (live)", color: "yellow", games: triviaGames },
   { kind: "group", id: "coding", title: "Coding Quiz (type the answer)", color: "cyan", games: codingGames },
   { kind: "group", id: "library", title: "Library (public-domain books)", color: "magenta", games: libraryGames },
+  { kind: "game", game: progressGame },
 ];
 
 // Flat list of every playable game, used for theming/high-score lookups
 // regardless of whether it's reached directly or through a group submenu.
-export const games: Game<any>[] = [snakeGame, wordleGame, ...triviaGames, ...codingGames, ...libraryGames];
+export const games: Game<any>[] = [snakeGame, wordleGame, ...triviaGames, ...codingGames, ...libraryGames, progressGame];
 
 export function getGame(id: string): Game<any> {
   const g = games.find((g) => g.id === id);

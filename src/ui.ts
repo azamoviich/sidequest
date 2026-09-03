@@ -9,6 +9,7 @@ import { getHighScore, maybeSaveHighScore } from "./highscore.js";
 import { playSfx, setSoundEnabled } from "./sound.js";
 import type { CommandResult } from "./runner.js";
 import { readStatus, heartbeatWatcher, type AgentStatus } from "./status.js";
+import { touchDailyStreak, addProductiveMs } from "./progress.js";
 import { getTriviaQuestions } from "./games/data/opentdb.js";
 import { LIBRARY_BOOKS, searchBooks } from "./games/data/gutendex.js";
 import { buildReaderGame } from "./games/reader.js";
@@ -50,6 +51,7 @@ const GAME_THEME: Record<string, string> = {
 for (const book of LIBRARY_BOOKS) {
   GAME_THEME[`library-${book.id}`] = "magenta";
 }
+GAME_THEME["progress"] = "green";
 
 const RAINBOW = ["red", "yellow", "green", "cyan", "blue", "magenta"];
 
@@ -101,6 +103,7 @@ export function runGameUI(opts: RunOptions): void {
   const screen = blessed.screen({ smartCSR: true, title: "sidequest" });
   const config = loadConfig();
   setSoundEnabled(config.sound);
+  touchDailyStreak();
 
   // Kick off Trivia's live fetch immediately, before the user has even
   // looked at the menu — by the time they navigate to it and pick it, it's
@@ -126,8 +129,17 @@ export function runGameUI(opts: RunOptions): void {
   let liveStatus: AgentStatus | null = null;
   let liveStatusAgent: string | null = null;
   let statusPollTimer: ReturnType<typeof setInterval> | null = null;
+  let workingSince: number | null = null; // timestamp productive-waiting accrual started, or null if not currently accruing
+
+  const flushProductiveTime = () => {
+    if (workingSince !== null) {
+      addProductiveMs(Date.now() - workingSince);
+      workingSince = null;
+    }
+  };
 
   const exitApp = () => {
+    flushProductiveTime();
     if (opts.kind === "wrap") {
       if (!commandFinished) opts.killCommand();
     }
@@ -790,6 +802,15 @@ export function runGameUI(opts: RunOptions): void {
           else if (newStatus === "waiting") playSfx("wrong");
         }
         const wasPausable = liveStatus === "waiting" || liveStatus === "done";
+
+        // "productive waiting" clock: accrue only while status is actually
+        // "working", flush the accumulated span the moment it stops being so.
+        if (newStatus === "working" && workingSince === null) {
+          workingSince = Date.now();
+        } else if (newStatus !== "working" && workingSince !== null) {
+          flushProductiveTime();
+        }
+
         liveStatus = newStatus;
         liveStatusAgent = newAgent;
 

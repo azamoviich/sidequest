@@ -1,3 +1,4 @@
+import { awardXp } from "../progress.js";
 import type { Game, GameContext } from "./types.js";
 
 export interface QuizQuestion {
@@ -143,8 +144,10 @@ export function buildQuizGame(id: string, title: string, source: QuizSource, fal
         state.score += 1;
         state.streak += 1;
         state.best = Math.max(state.best, state.streak);
+        awardXp(10, "quizzes");
       } else {
         state.streak = 0;
+        awardXp(2, "quizzes");
       }
     },
 
