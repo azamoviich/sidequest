@@ -82,6 +82,7 @@ export const wordleGame: Game<WordleState> = {
   id: "wordle",
   title: "Wordle",
   tickIntervalMs: 100,
+  capturesTextInput: true,
 
   init(ctx: GameContext): WordleState {
     const state: WordleState = {

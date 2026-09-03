@@ -11,6 +11,10 @@ export interface Game<TState = unknown> {
   title: string;
   /** ms between automatic ticks, or null if the game is purely input-driven (e.g. quizzes) */
   tickIntervalMs: number | null;
+  /** true if this game needs full a-z/punctuation text input — disables the
+   * global q/m quit-to-menu shortcuts while playing (they'd otherwise eat
+   * every "q" or "m" you type as an answer), same as Wordle needs. */
+  capturesTextInput?: boolean;
 
   init(ctx: GameContext): TState;
   tick?(state: TState, ctx: GameContext): void;

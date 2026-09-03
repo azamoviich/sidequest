@@ -2,7 +2,7 @@ import blessed from "blessed";
 import { appendFileSync, mkdirSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
-import { games, type Game } from "./games/index.js";
+import { games, menuEntries, type Game, type GameGroup } from "./games/index.js";
 import { tickIntervalFor } from "./games/snake.js";
 import { loadConfig, saveConfig, type Config, type Difficulty } from "./config.js";
 import { getHighScore, maybeSaveHighScore } from "./highscore.js";
@@ -38,6 +38,11 @@ const GAME_THEME: Record<string, string> = {
   "trivia-music": "cyan",
   "trivia-science": "blue",
   "trivia-geography": "blue",
+  "coding-frontend": "cyan",
+  "coding-backend": "cyan",
+  "coding-nodejs": "cyan",
+  "coding-algorithms": "cyan",
+  "coding-git": "cyan",
 };
 
 const RAINBOW = ["red", "yellow", "green", "cyan", "blue", "magenta"];
@@ -54,6 +59,7 @@ function rainbowText(text: string): string {
 
 type Mode =
   | { kind: "menu"; index: number }
+  | { kind: "submenu"; group: GameGroup; index: number }
   | { kind: "settings"; index: number }
   | {
       kind: "game";
@@ -137,6 +143,11 @@ export function runGameUI(opts: RunOptions): void {
     renderSettings();
   };
 
+  const goToSubmenu = (group: GameGroup) => {
+    mode = { kind: "submenu", group, index: 0 };
+    renderSubmenu();
+  };
+
   let tickSecondCounter = 0;
 
   function startGameTickLoop() {
@@ -196,6 +207,7 @@ export function runGameUI(opts: RunOptions): void {
     // guard actually rebuilds instead of silently updating a removed
     // widget (which renders nothing and looks like the UI froze).
     menuBody = null;
+    submenuBody = null;
     settingsBody = null;
     gameBox = null;
     sidebar = null;
@@ -225,12 +237,12 @@ export function runGameUI(opts: RunOptions): void {
       top: 5,
       left: "center",
       width: CONTENT_WIDTH,
-      // rows are double-spaced ("\n\n" between each), so (games + settings)
-      // entries need 2*entries-1 content lines, plus 2 for the border and 2
-      // for vertical padding. Too short here silently clips the bottom rows
-      // instead of erroring — that's what ate History/Settings off-screen
-      // before this was computed correctly.
-      height: 2 * (games.length + 1) + 5,
+      // rows are double-spaced ("\n\n" between each), so (menuEntries +
+      // settings) entries need 2*entries-1 content lines, plus 2 for the
+      // border and 2 for vertical padding. Too short here silently clips the
+      // bottom rows instead of erroring — that's what ate History/Settings
+      // off-screen before this was computed correctly.
+      height: 2 * (menuEntries.length + 1) + 5,
       tags: true,
       padding: { left: 2, right: 2, top: 1, bottom: 1 },
       border: { type: "line" },
@@ -260,19 +272,92 @@ export function runGameUI(opts: RunOptions): void {
     if (!menuBody) buildMenuFrame();
 
     const rows: string[] = [];
-    games.forEach((g, i) => {
-      const color = GAME_THEME[g.id] ?? "white";
-      const best = getHighScore(g.id);
+    menuEntries.forEach((entry, i) => {
       const selected = mode.kind === "menu" && mode.index === i;
+      let label: string;
+      let color: string;
+      if (entry.kind === "game") {
+        color = GAME_THEME[entry.game.id] ?? "white";
+        const best = getHighScore(entry.game.id);
+        label = `${entry.game.title}  {grey-fg}(best: ${best}){/grey-fg}`;
+      } else {
+        color = entry.color;
+        const best = Math.max(0, ...entry.games.map((g) => getHighScore(g.id)));
+        label = `${entry.title}  {grey-fg}(${entry.games.length} categories, best: ${best}) ▸{/grey-fg}`;
+      }
       const swatch = `{${color}-bg}  {/${color}-bg}`;
-      const label = `${g.title}  {grey-fg}(best: ${best}){/grey-fg}`;
       rows.push(selected ? `{inverse}{bold} ${swatch} ${label} {/bold}{/inverse}` : ` ${swatch} ${label}`);
     });
-    const settingsSelected = mode.kind === "menu" && mode.index === games.length;
+    const settingsSelected = mode.kind === "menu" && mode.index === menuEntries.length;
     const settingsLabel = `Settings  {grey-fg}sound: ${config.sound ? "on" : "off"}, difficulty: ${config.difficulty}{/grey-fg}`;
     rows.push(settingsSelected ? `{inverse}{bold} ⚙ ${settingsLabel} {/bold}{/inverse}` : ` ⚙ ${settingsLabel}`);
 
     menuBody!.setContent(rows.join("\n\n"));
+    screen.render();
+  }
+
+  // --- submenu (category picker inside a group, e.g. Trivia/Coding Quiz) ---
+
+  let submenuBody: blessed.Widgets.BoxElement | null = null;
+
+  function buildSubmenuFrame(group: GameGroup) {
+    clearScreen();
+    const title = blessed.box({
+      top: 1,
+      left: "center",
+      width: CONTENT_WIDTH,
+      height: 3,
+      tags: true,
+      align: "center",
+      valign: "middle",
+      content: `{bold}{${group.color}-fg}${escapeTags(group.title)}{/${group.color}-fg}{/bold}`,
+      border: { type: "line" },
+      style: { border: { fg: group.color } },
+    });
+
+    submenuBody = blessed.box({
+      top: 4,
+      left: "center",
+      width: CONTENT_WIDTH,
+      height: 2 * (group.games.length + 1) + 5,
+      tags: true,
+      padding: { left: 2, right: 2, top: 1, bottom: 1 },
+      border: { type: "line" },
+      label: " pick a category ",
+      style: { border: { fg: group.color } },
+    });
+
+    const footer = blessed.box({
+      bottom: 1,
+      left: "center",
+      width: CONTENT_WIDTH,
+      height: 3,
+      tags: true,
+      align: "center",
+      content: "{grey-fg}↑↓ move   enter select   esc back   q quit{/grey-fg}",
+    });
+
+    screen.append(title);
+    screen.append(submenuBody);
+    screen.append(footer);
+  }
+
+  function renderSubmenu() {
+    if (mode.kind !== "submenu") return;
+    const m = mode; // narrow once — TS won't retain the guard inside the closure below
+    if (!submenuBody) buildSubmenuFrame(m.group);
+
+    const rows: string[] = [];
+    m.group.games.forEach((g, i) => {
+      const selected = m.index === i;
+      const best = getHighScore(g.id);
+      const label = `${g.title}  {grey-fg}(best: ${best}){/grey-fg}`;
+      const swatch = `{${m.group.color}-bg}  {/${m.group.color}-bg}`;
+      rows.push(selected ? `{inverse}{bold} ${swatch} ${label} {/bold}{/inverse}` : ` ${swatch} ${label}`);
+    });
+    rows.push(m.index === m.group.games.length ? "{inverse}{bold} ← Back {/bold}{/inverse}" : " ← Back");
+
+    submenuBody!.setContent(rows.join("\n\n"));
     screen.render();
   }
 
@@ -483,12 +568,12 @@ export function runGameUI(opts: RunOptions): void {
           : "{grey-fg}still running...{/grey-fg}",
     ];
     sidebar!.setContent(lines.join("\n"));
-    const isWordle = g.id === "wordle" && !mode.done;
+    const typing = g.capturesTextInput && !mode.done;
     footer!.setContent(
       mode.done
         ? "{green-fg}m menu   q see results & quit{/green-fg}"
-        : isWordle
-          ? "{grey-fg}type letters, enter to submit   esc menu   ctrl+c quit{/grey-fg}"
+        : typing
+          ? "{grey-fg}type your answer, enter to submit   esc menu   ctrl+c quit{/grey-fg}"
           : "{grey-fg}m menu   q quit{/grey-fg}"
     );
     screen.render();
@@ -516,10 +601,10 @@ export function runGameUI(opts: RunOptions): void {
 
   screen.on("keypress", (ch: string, key: any) => {
     const keyName: string = key?.name ?? ch ?? "";
-    const isWordleTyping = mode.kind === "game" && mode.game.id === "wordle" && !mode.done;
+    const isWordleTyping = mode.kind === "game" && mode.game.capturesTextInput && !mode.done;
 
     if (keyName === "escape") {
-      if (mode.kind === "settings" || mode.kind === "game") goToMenu();
+      if (mode.kind === "settings" || mode.kind === "game" || mode.kind === "submenu") goToMenu();
       return;
     }
 
@@ -535,15 +620,33 @@ export function runGameUI(opts: RunOptions): void {
     }
 
     if (mode.kind === "menu") {
-      const count = games.length + 1;
+      const count = menuEntries.length + 1;
       if (keyName === "up") mode.index = (mode.index - 1 + count) % count;
       else if (keyName === "down") mode.index = (mode.index + 1) % count;
       else if (keyName === "enter" || keyName === "space") {
-        if (mode.index === games.length) goToSettings();
-        else startGame(games[mode.index]);
+        if (mode.index === menuEntries.length) {
+          goToSettings();
+        } else {
+          const entry = menuEntries[mode.index];
+          if (entry.kind === "group") goToSubmenu(entry);
+          else startGame(entry.game);
+        }
         return;
       }
       renderMenu();
+      return;
+    }
+
+    if (mode.kind === "submenu") {
+      const count = mode.group.games.length + 1; // +1 for Back
+      if (keyName === "up") mode.index = (mode.index - 1 + count) % count;
+      else if (keyName === "down") mode.index = (mode.index + 1) % count;
+      else if (keyName === "enter" || keyName === "space") {
+        if (mode.index === mode.group.games.length) goToMenu();
+        else startGame(mode.group.games[mode.index]);
+        return;
+      }
+      renderSubmenu();
       return;
     }
 
@@ -569,6 +672,9 @@ export function runGameUI(opts: RunOptions): void {
     if (mode.kind === "menu") {
       menuBody = null;
       renderMenu();
+    } else if (mode.kind === "submenu") {
+      submenuBody = null;
+      renderSubmenu();
     } else if (mode.kind === "settings") {
       settingsBody = null;
       renderSettings();
