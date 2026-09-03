@@ -18,6 +18,7 @@ import {
 import { wordleGame } from "./wordle.js";
 import { tictactoeGame } from "./tictactoe.js";
 import { game2048 } from "./game2048.js";
+import { detectiveGame } from "./detective.js";
 import { buildReaderGame } from "./reader.js";
 import { progressGame } from "./progress-screen.js";
 import { dailyChallengeGame } from "./daily-challenge.js";
@@ -79,6 +80,7 @@ export const menuEntries: MenuEntry[] = [
   { kind: "game", game: wordleGame },
   { kind: "game", game: tictactoeGame },
   { kind: "game", game: game2048 },
+  { kind: "game", game: detectiveGame },
   { kind: "group", id: "trivia", title: "Trivia Quiz (live)", color: "yellow", games: triviaGames },
   { kind: "group", id: "coding", title: "Coding Quiz (type the answer)", color: "cyan", games: codingGames },
   { kind: "group", id: "debug", title: "Spot the Bug", color: "red", games: debugGames },
@@ -95,6 +97,7 @@ export const games: Game<any>[] = [
   wordleGame,
   tictactoeGame,
   game2048,
+  detectiveGame,
   ...triviaGames,
   ...codingGames,
   ...debugGames,
