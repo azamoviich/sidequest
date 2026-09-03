@@ -46,6 +46,15 @@ const GAME_THEME: Record<string, string> = {
   "coding-nodejs": "cyan",
   "coding-algorithms": "cyan",
   "coding-git": "cyan",
+  "debug-javascript": "red",
+  "debug-python": "red",
+  "debug-sql": "red",
+  "debug-git": "red",
+  "debug-algorithms": "red",
+  "debug-linux": "red",
+  "debug-regex": "red",
+  "debug-http": "red",
+  "debug-docker": "red",
 };
 
 for (const book of LIBRARY_BOOKS) {
