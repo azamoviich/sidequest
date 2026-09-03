@@ -33,7 +33,7 @@ const GAME_THEME: Record<string, string> = {
   snake: "green",
   wordle: "magenta",
   geography: "blue",
-  history: "yellow",
+  trivia: "yellow",
 };
 
 const RAINBOW = ["red", "yellow", "green", "cyan", "blue", "magenta"];
@@ -125,6 +125,32 @@ export function runGameUI(opts: RunOptions): void {
     renderSettings();
   };
 
+  let tickSecondCounter = 0;
+
+  function startGameTickLoop() {
+    if (mode.kind !== "game") return;
+    if (tickTimer) clearInterval(tickTimer);
+    const tickMs = mode.tickMs;
+    tickTimer = setInterval(() => {
+      if (mode.kind !== "game") return;
+      tickSecondCounter += 100;
+      if (tickSecondCounter >= 1000) {
+        tickSecondCounter = 0;
+        mode.elapsedSec += 1;
+        if (commandFinished) mode.done = true;
+      }
+      mode.game.tick?.(mode.state, mode.ctx);
+      renderGame();
+    }, Math.min(tickMs ?? 200, 100));
+  }
+
+  function stopGameTickLoop() {
+    if (tickTimer) {
+      clearInterval(tickTimer);
+      tickTimer = null;
+    }
+  }
+
   const startGame = (game: Game<any>) => {
     gameBox = null;
     sidebar = null;
@@ -142,19 +168,12 @@ export function runGameUI(opts: RunOptions): void {
       tickMs,
       flashUntil: 0,
     };
-    if (tickTimer) clearInterval(tickTimer);
-    let secondCounter = 0;
-    tickTimer = setInterval(() => {
-      if (mode.kind !== "game") return;
-      secondCounter += 100;
-      if (secondCounter >= 1000) {
-        secondCounter = 0;
-        mode.elapsedSec += 1;
-        if (commandFinished) mode.done = true;
-      }
-      mode.game.tick?.(mode.state, mode.ctx);
-      renderGame();
-    }, Math.min(mode.tickMs ?? 200, 100));
+    tickSecondCounter = 0;
+    // Watch mode: if the agent is already waiting/done when you pick a game,
+    // start paused rather than ticking a game nobody asked to run yet.
+    if (opts.kind !== "watch" || liveStatus === "working" || liveStatus === null) {
+      startGameTickLoop();
+    }
     renderGame();
   };
 
@@ -545,8 +564,16 @@ export function runGameUI(opts: RunOptions): void {
           if (newStatus === "done") playSfx("done");
           else if (newStatus === "waiting") playSfx("wrong");
         }
+        const wasPausable = liveStatus === "waiting" || liveStatus === "done";
         liveStatus = newStatus;
         liveStatusAgent = newAgent;
+
+        if (mode.kind === "game") {
+          const shouldPause = newStatus === "waiting" || newStatus === "done";
+          if (shouldPause) stopGameTickLoop();
+          else if (wasPausable && newStatus === "working") startGameTickLoop();
+        }
+
         redrawCurrentScreen();
       }
     }, 500);

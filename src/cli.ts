@@ -1,9 +1,36 @@
 #!/usr/bin/env node
+import { appendFileSync, mkdirSync } from "node:fs";
+import { homedir } from "node:os";
+import { join } from "node:path";
 import { runCommand } from "./runner.js";
 import { runGameUI } from "./ui.js";
 import { runHookCommand } from "./hook.js";
 import { runSetupWizard } from "./setup.js";
 import type { CommandResult } from "./runner.js";
+
+// If something throws inside a blessed render/keypress callback while the
+// alternate screen buffer is active, the terminal is left showing a static
+// frame with no visible error and no way to interact — indistinguishable
+// from a genuine freeze. Log the real error instead of dying silently.
+function logCrash(label: string, err: unknown): void {
+  try {
+    const dir = join(homedir(), ".waitplay");
+    mkdirSync(dir, { recursive: true });
+    const stack = err instanceof Error ? err.stack ?? err.message : String(err);
+    appendFileSync(join(dir, "crash.log"), `[${new Date().toISOString()}] ${label}\n${stack}\n\n`);
+  } catch {
+    // logging the crash must never itself throw
+  }
+}
+
+process.on("uncaughtException", (err) => {
+  logCrash("uncaughtException", err);
+  process.exit(1);
+});
+process.on("unhandledRejection", (err) => {
+  logCrash("unhandledRejection", err);
+  process.exit(1);
+});
 
 function printHelp(): void {
   console.log(`waitplay — play a terminal game while any slow command runs

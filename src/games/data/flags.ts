@@ -78,7 +78,8 @@ export function renderFlagBands(bands: [string, string, string]): string {
 function buildQuestions(kind: "flag-to-country" | "country-to-capital"): QuizQuestion[] {
   if (kind === "flag-to-country") {
     return COUNTRIES.map((c) => ({
-      prompt: `Which country's flag is this?\n\n${renderFlagBands(c.bands)}`,
+      prompt: `Which country's flag is this?`,
+      visual: renderFlagBands(c.bands),
       choices: COUNTRIES.map((x) => x.name),
       correctIndex: COUNTRIES.indexOf(c),
     }));
