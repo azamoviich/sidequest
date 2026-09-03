@@ -1,5 +1,10 @@
 import { WORDS } from "./data/words.js";
+import { GUESS_WORDS } from "./data/guess-words.js";
 import type { Game, GameContext } from "./types.js";
+
+// GUESS_WORDS (~16k words) already contains every word in the curated WORDS
+// answer pool (verified at generation time), so this set alone covers both.
+const VALID_GUESSES = new Set(GUESS_WORDS);
 
 const MAX_GUESSES = 6;
 const WORD_LEN = 5;
@@ -119,7 +124,7 @@ export const wordleGame: Game<WordleState> = {
         state.message = "not enough letters";
         return;
       }
-      if (!WORDS.includes(state.current)) {
+      if (!VALID_GUESSES.has(state.current)) {
         state.message = "not in word list";
         return;
       }

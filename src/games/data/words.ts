@@ -1,8 +1,7 @@
-// Common 5-letter English words, used as both the answer pool and the set of
-// accepted guesses (no external dictionary dependency, keeps the package
-// small and offline). Not exhaustive — an uncommon-but-valid word may get
-// rejected as "not in word list"; that's an accepted tradeoff for a
-// wait-while-your-command-runs game, not a competitive Wordle clone.
+// Curated common 5-letter words — this is the ANSWER pool only (the target
+// word each round), kept deliberately small so answers are always
+// guessable/fair rather than obscure. Accepted guesses are validated against
+// the much larger dictionary in guess-words.ts instead — see wordle.ts.
 export const WORDS: string[] = [
   "ABOUT", "ABOVE", "ACTOR", "ADAPT", "ADMIT", "ADOPT", "AFTER", "AGAIN", "AGENT", "AGREE",
   "AHEAD", "ALARM", "ALBUM", "ALERT", "ALIKE", "ALIVE", "ALLOW", "ALONE", "ALONG", "ALTER",

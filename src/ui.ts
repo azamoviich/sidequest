@@ -38,6 +38,12 @@ const GAME_THEME: Record<string, string> = {
 
 const RAINBOW = ["red", "yellow", "green", "cyan", "blue", "magenta"];
 
+// Fixed content width, centered on screen via left:'center' — keeps the
+// layout readable and intentional on wide terminals instead of stretching
+// text edge-to-edge, and keeps every screen (menu/settings/game) visually
+// consistent with each other.
+const CONTENT_WIDTH = 78;
+
 function rainbowText(text: string): string {
   return [...text].map((ch, i) => (ch === " " ? " " : `{${RAINBOW[i % RAINBOW.length]}-fg}{bold}${ch}{/bold}{/${RAINBOW[i % RAINBOW.length]}-fg}`)).join("");
 }
@@ -154,6 +160,15 @@ export function runGameUI(opts: RunOptions): void {
 
   function clearScreen() {
     for (const child of [...screen.children]) screen.remove(child);
+    // Widgets built by any *other* screen are now detached and dead — null
+    // their cached refs so each render*() function's `if (!x) buildX()`
+    // guard actually rebuilds instead of silently updating a removed
+    // widget (which renders nothing and looks like the UI froze).
+    menuBody = null;
+    settingsBody = null;
+    gameBox = null;
+    sidebar = null;
+    footer = null;
   }
 
   // --- menu ---
@@ -163,9 +178,9 @@ export function runGameUI(opts: RunOptions): void {
   function buildMenuFrame() {
     clearScreen();
     const title = blessed.box({
-      top: 0,
-      left: 0,
-      width: "100%",
+      top: 1,
+      left: "center",
+      width: CONTENT_WIDTH,
       height: 4,
       tags: true,
       align: "center",
@@ -176,26 +191,29 @@ export function runGameUI(opts: RunOptions): void {
     });
 
     menuBody = blessed.box({
-      top: 4,
-      left: 0,
-      width: "70%",
+      top: 5,
+      left: "center",
+      width: CONTENT_WIDTH,
       // rows are double-spaced ("\n\n" between each), so (games + settings)
-      // entries need 2*entries-1 content lines, plus 2 for the border. Too
-      // short here silently clips the bottom rows instead of erroring —
-      // that's what ate History/Settings off the bottom of the screen.
-      height: 2 * (games.length + 1) + 3,
+      // entries need 2*entries-1 content lines, plus 2 for the border and 2
+      // for vertical padding. Too short here silently clips the bottom rows
+      // instead of erroring — that's what ate History/Settings off-screen
+      // before this was computed correctly.
+      height: 2 * (games.length + 1) + 5,
       tags: true,
+      padding: { left: 2, right: 2, top: 1, bottom: 1 },
       border: { type: "line" },
       label: " pick a game ",
       style: { border: { fg: "green" } },
     });
 
     const footer = blessed.box({
-      bottom: 0,
-      left: 0,
-      width: "100%",
+      bottom: 1,
+      left: "center",
+      width: CONTENT_WIDTH,
       height: 3,
       tags: true,
+      align: "center",
       content: commandFinished
         ? "{green-fg}{bold}command finished{/bold}{/green-fg}  —  pick a game, or press q to see results"
         : "{grey-fg}↑↓ move   enter select   q quit{/grey-fg}",
@@ -235,32 +253,36 @@ export function runGameUI(opts: RunOptions): void {
   function buildSettingsFrame() {
     clearScreen();
     const header = blessed.box({
-      top: 0,
-      left: 0,
-      width: "100%",
+      top: 1,
+      left: "center",
+      width: CONTENT_WIDTH,
       height: 3,
       tags: true,
-      content: "{bold}{yellow-fg}Settings{/yellow-fg}{/bold}",
+      align: "center",
+      valign: "middle",
+      content: "{bold}{yellow-fg}⚙ Settings{/yellow-fg}{/bold}",
       border: { type: "line" },
       style: { border: { fg: "yellow" } },
     });
 
     settingsBody = blessed.box({
-      top: 3,
-      left: 0,
-      width: "70%",
-      height: 6,
+      top: 4,
+      left: "center",
+      width: CONTENT_WIDTH,
+      height: 8,
       tags: true,
+      padding: { left: 2, right: 2, top: 1, bottom: 1 },
       border: { type: "line" },
       style: { border: { fg: "yellow" } },
     });
 
     const footer = blessed.box({
-      bottom: 0,
-      left: 0,
-      width: "100%",
+      bottom: 1,
+      left: "center",
+      width: CONTENT_WIDTH,
       height: 3,
       tags: true,
+      align: "center",
       content: "{grey-fg}↑↓ move   enter toggle/change   esc back   q quit{/grey-fg}",
     });
 
@@ -302,6 +324,15 @@ export function runGameUI(opts: RunOptions): void {
 
   // --- game ---
 
+  // Snake's grid renders at 2 chars/cell × 30 cells = 60, +2 for the border =
+  // 62 minimum — wider than CONTENT_WIDTH, so the game screen gets its own,
+  // wider centered container. gameBox/sidebar are nested inside it (blessed's
+  // `parent` option) so they lay out side-by-side as one centered group
+  // instead of each trying to center independently.
+  const GAME_BOX_WIDTH = 62;
+  const SIDEBAR_WIDTH = 30;
+  const GAME_CONTAINER_WIDTH = GAME_BOX_WIDTH + SIDEBAR_WIDTH;
+
   let gameBox: blessed.Widgets.BoxElement | null = null;
   let sidebar: blessed.Widgets.BoxElement | null = null;
   let footer: blessed.Widgets.BoxElement | null = null;
@@ -310,20 +341,33 @@ export function runGameUI(opts: RunOptions): void {
     clearScreen();
     const color = GAME_THEME[game.id] ?? "green";
     const header = blessed.box({
-      top: 0,
-      left: 0,
-      width: "100%",
+      top: 1,
+      left: "center",
+      width: GAME_CONTAINER_WIDTH,
       height: 3,
       tags: true,
+      align: "center",
+      valign: "middle",
       content: `{bold}{${color}-fg}${escapeTags(game.title)}{/${color}-fg}{/bold}   {grey-fg}${opts.kind === "watch" ? "watching:" : "running:"}{/grey-fg} {cyan-fg}${escapeTags(commandLabel())}{/cyan-fg}${liveStatus ? "   " + STATUS_LABEL[liveStatus] : ""}`,
       border: { type: "line" },
       style: { border: { fg: color } },
     });
 
+    const container = blessed.box({
+      top: 4,
+      left: "center",
+      width: GAME_CONTAINER_WIDTH,
+      height: 20,
+    });
+
     gameBox = blessed.box({
-      top: 3,
+      // No padding here — the game canvas (e.g. Snake's 30-cell grid at
+      // 2 chars/cell = 60 chars) is sized to fit the border-only interior
+      // exactly; padding would clip the rightmost column.
+      parent: container,
+      top: 0,
       left: 0,
-      width: "62%",
+      width: GAME_BOX_WIDTH,
       height: 20,
       tags: true,
       border: { type: "line" },
@@ -331,27 +375,29 @@ export function runGameUI(opts: RunOptions): void {
     });
 
     sidebar = blessed.box({
-      top: 3,
-      left: "62%",
-      width: "38%",
+      parent: container,
+      top: 0,
+      left: GAME_BOX_WIDTH,
+      width: SIDEBAR_WIDTH,
       height: 20,
       tags: true,
+      padding: { left: 1, right: 1, top: 1, bottom: 0 },
       border: { type: "line" },
       style: { border: { fg: "yellow" } },
     });
 
     footer = blessed.box({
-      top: 23,
-      left: 0,
-      width: "100%",
+      top: 24,
+      left: "center",
+      width: GAME_CONTAINER_WIDTH,
       height: 3,
       tags: true,
+      align: "center",
       content: "{grey-fg}m menu   q quit{/grey-fg}",
     });
 
     screen.append(header);
-    screen.append(gameBox);
-    screen.append(sidebar);
+    screen.append(container);
     screen.append(footer);
   }
 
