@@ -1,0 +1,272 @@
+<title>Sidequest Social Card</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Manrope:wght@500;700;800&display=swap">
+<style>
+  :root {
+    --void: #0a0e14;
+    --panel: #0f1621;
+    --panel-2: #141d2b;
+    --line: #232f3f;
+    --ink: #e6edf5;
+    --ink-dim: #5b6b80;
+    --green: #5fd68a;
+    --magenta: #d68ad6;
+    --cyan: #67d9d9;
+    --yellow: #e0c15c;
+    --red: #e07a7a;
+    --blue: #7aa6e0;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--void);
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 40px 16px;
+  }
+
+  .card {
+    width: 1200px;
+    height: 630px;
+    flex: 0 0 auto;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    box-shadow: 0 40px 90px -30px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255, 255, 255, 0.02) inset;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+
+  /* --- terminal chrome --- */
+  .chrome {
+    height: 46px;
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 0 20px;
+    background: var(--panel-2);
+    border-bottom: 1px solid var(--line);
+  }
+  .dots { display: flex; gap: 8px; }
+  .dot { width: 12px; height: 12px; border-radius: 50%; }
+  .dot.r { background: #e0645c; }
+  .dot.y { background: #e0b458; }
+  .dot.g { background: #5fd68a; }
+  .chrome-title {
+    font-size: 13px;
+    color: var(--ink-dim);
+    letter-spacing: 0.02em;
+  }
+
+  /* --- body --- */
+  .body {
+    flex: 1;
+    display: flex;
+    padding: 34px 44px 0 44px;
+    gap: 40px;
+  }
+
+  .left { flex: 0 0 460px; display: flex; flex-direction: column; }
+
+  .wordmark {
+    font-size: 42px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    line-height: 1;
+    display: flex;
+    text-wrap: balance;
+  }
+  .wordmark span { display: inline-block; }
+  .wordmark .r { color: var(--red); }
+  .wordmark .y { color: var(--yellow); }
+  .wordmark .g { color: var(--green); }
+  .wordmark .c { color: var(--cyan); }
+  .wordmark .b { color: var(--blue); }
+  .wordmark .m { color: var(--magenta); }
+
+  .status-line {
+    margin-top: 14px;
+    font-size: 14px;
+    color: var(--ink-dim);
+  }
+  .status-line .agent { color: var(--cyan); }
+  .status-line .dot-live { color: var(--green); }
+  .status-line .state { color: var(--green); font-weight: 700; }
+
+  .tagline {
+    font-family: "Manrope", ui-sans-serif, system-ui, sans-serif;
+    font-size: 25px;
+    font-weight: 700;
+    line-height: 1.32;
+    margin-top: 26px;
+    color: var(--ink);
+    text-wrap: balance;
+    max-width: 420px;
+  }
+  .tagline em {
+    font-style: normal;
+    color: var(--green);
+  }
+
+  .sub {
+    font-family: "Manrope", ui-sans-serif, system-ui, sans-serif;
+    font-size: 15.5px;
+    color: var(--ink-dim);
+    line-height: 1.55;
+    margin-top: 14px;
+    max-width: 400px;
+  }
+
+  .install {
+    margin-top: auto;
+    margin-bottom: 30px;
+    background: var(--void);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 13px 16px;
+    font-size: 15px;
+    color: var(--ink);
+    width: fit-content;
+  }
+  .install .prompt { color: var(--green); margin-right: 8px; }
+  .install .cmd { color: var(--ink); }
+
+  /* --- right: menu mock --- */
+  .right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding-top: 4px;
+  }
+
+  .menu-frame {
+    border: 1px solid var(--green);
+    border-radius: 8px;
+    padding: 16px 18px;
+    background: rgba(95, 214, 138, 0.03);
+  }
+  .menu-label {
+    font-size: 11px;
+    color: var(--green);
+    letter-spacing: 0.08em;
+    margin-bottom: 12px;
+  }
+
+  .row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 6px;
+    border-radius: 6px;
+    font-size: 15px;
+  }
+  .row.selected {
+    background: var(--green);
+  }
+  .row.selected .row-title,
+  .row.selected .row-meta {
+    color: var(--void);
+  }
+  .swatch {
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+    flex: 0 0 auto;
+  }
+  .row-title { color: var(--ink); font-weight: 500; }
+  .row-meta { color: var(--ink-dim); font-size: 13px; margin-left: auto; }
+
+  .stats-strip {
+    margin-top: 22px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .stat {
+    background: var(--panel-2);
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .stat-num {
+    font-size: 22px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .stat-num.g { color: var(--green); }
+  .stat-num.m { color: var(--magenta); }
+  .stat-num.c { color: var(--cyan); }
+  .stat-label {
+    font-family: "Manrope", ui-sans-serif, system-ui, sans-serif;
+    font-size: 11.5px;
+    color: var(--ink-dim);
+    letter-spacing: 0.02em;
+  }
+
+  .footer {
+    margin-top: auto;
+    padding: 16px 44px 22px 44px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid var(--line);
+    font-size: 13px;
+    color: var(--ink-dim);
+  }
+  .footer .mit { color: var(--yellow); }
+  .footer .repo { color: var(--ink); }
+</style>
+
+<div class="card">
+  <div class="chrome">
+    <div class="dots"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div>
+    <div class="chrome-title">sidequest — zsh — 100×36</div>
+  </div>
+
+  <div class="body">
+    <div class="left">
+      <div class="wordmark">
+        <span class="r">S</span><span class="y">&nbsp;I</span><span class="g">&nbsp;D</span><span class="c">&nbsp;E</span><span class="b">&nbsp;Q</span><span class="m">&nbsp;U</span><span class="r">&nbsp;E</span><span class="y">&nbsp;S</span><span class="g">&nbsp;T</span>
+      </div>
+      <div class="status-line">watching: <span class="agent">claude-code</span>&nbsp;&nbsp;<span class="dot-live">●</span> <span class="state">working</span></div>
+
+      <div class="tagline">Play a game while your <em>AI agent</em> works — instead of doomscrolling.</div>
+      <div class="sub">Auto-opens on every prompt, tracks agent status live, hands your terminal back the instant it needs you.</div>
+
+      <div class="install"><span class="prompt">$</span><span class="cmd">npm install -g sidequest-cli</span></div>
+    </div>
+
+    <div class="right">
+      <div class="menu-frame">
+        <div class="menu-label">pick a game</div>
+        <div class="row selected"><div class="swatch" style="background:var(--yellow)"></div><div class="row-title">Daily Challenge</div><div class="row-meta">best: 4</div></div>
+        <div class="row"><div class="swatch" style="background:var(--green)"></div><div class="row-title">Snake</div><div class="row-meta">best: 44</div></div>
+        <div class="row"><div class="swatch" style="background:var(--magenta)"></div><div class="row-title">Wordle</div><div class="row-meta">best: 12</div></div>
+        <div class="row"><div class="swatch" style="background:var(--red)"></div><div class="row-title">Spot the Bug</div><div class="row-meta">9 categories ▸</div></div>
+        <div class="row"><div class="swatch" style="background:var(--magenta)"></div><div class="row-title">Library</div><div class="row-meta">10 books ▸</div></div>
+      </div>
+
+      <div class="stats-strip">
+        <div class="stat"><div class="stat-num g">11</div><div class="stat-label">GAMES, 8 CATEGORIES</div></div>
+        <div class="stat"><div class="stat-num m">MIT</div><div class="stat-label">FREE &amp; OPEN SOURCE</div></div>
+        <div class="stat"><div class="stat-num c">0.11</div><div class="stat-label">CURRENT VERSION</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div><span class="mit">MIT licensed</span> · <span class="repo">github.com/azamoviich/sidequest</span></div>
+    <div>npmjs.com/package/sidequest-cli</div>
+  </div>
+</div>

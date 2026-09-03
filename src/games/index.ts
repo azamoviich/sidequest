@@ -64,6 +64,8 @@ export const cryptoGames: Game<any>[] = [
   buildCryptoGame("crypto-hashid", "Hash ID", generateHashIdPuzzle),
 ];
 
+export const arcadeGames: Game<any>[] = [snakeGame, wordleGame, tictactoeGame, game2048, detectiveGame];
+
 export const lessonGames: Game<any>[] = LESSONS.map((lesson) => buildLessonGame(lesson));
 
 export const libraryGames: Game<any>[] = LIBRARY_BOOKS.map((book) => buildReaderGame(book));
@@ -80,11 +82,7 @@ export type MenuEntry = { kind: "game"; game: Game<any> } | GameGroup;
 
 export const menuEntries: MenuEntry[] = [
   { kind: "game", game: dailyChallengeGame },
-  { kind: "game", game: snakeGame },
-  { kind: "game", game: wordleGame },
-  { kind: "game", game: tictactoeGame },
-  { kind: "game", game: game2048 },
-  { kind: "game", game: detectiveGame },
+  { kind: "group", id: "games", title: "Games", color: "green", games: arcadeGames },
   { kind: "group", id: "trivia", title: "Trivia Quiz (live)", color: "yellow", games: triviaGames },
   { kind: "group", id: "coding", title: "Coding Quiz (type the answer)", color: "cyan", games: codingGames },
   { kind: "group", id: "debug", title: "Spot the Bug", color: "red", games: debugGames },
