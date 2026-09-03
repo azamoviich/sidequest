@@ -100,6 +100,12 @@ cd sidequest
 npm install && npm run build && npm link
 ```
 
+## Found a bug?
+
+Open an issue: [github.com/azamoviich/sidequest/issues](https://github.com/azamoviich/sidequest/issues), or email **muhammadamin.nazirov@mail.ru**.
+
+*Open to new opportunities.*
+
 ## Why it's not just another wrapper script
 
 - **Real live data, not a static toy.** Trivia comes from an actual API with real category/difficulty filtering — not a hardcoded list you'll memorize in a week.
