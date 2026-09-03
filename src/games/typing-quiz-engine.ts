@@ -128,14 +128,20 @@ export function buildTypingQuizGame(id: string, title: string, questions: Typing
           lines.push("", `{green-fg}Answer: {bold}${escapeTags(q.answers[0])}{/bold}{/green-fg}`);
         }
       } else {
-        lines.push(`{grey-fg}> {/grey-fg}${escapeTags(state.current)}{inverse} {/inverse}`);
+        lines.push(`{cyan-fg}{bold}❯{/bold}{/cyan-fg} ${escapeTags(state.current)}{blink}{cyan-fg}▌{/cyan-fg}{/blink}`);
       }
 
       return lines.join("\n");
     },
 
     sidebar(state) {
-      const lines = [`{bold}Score{/bold}   ${state.score}`, `{bold}Streak{/bold}  ${state.streak}`, `{bold}Best{/bold}    ${state.best}`];
+      const streakTag = state.streak >= 5 ? "{red-fg}{bold}" : state.streak >= 3 ? "{yellow-fg}{bold}" : "";
+      const streakClose = state.streak >= 3 ? "{/bold}" + (state.streak >= 5 ? "{/red-fg}" : "{/yellow-fg}") : "";
+      const lines = [
+        `{bold}Score{/bold}   ${state.score}`,
+        `{bold}Streak{/bold}  ${streakTag}${state.streak}${streakClose}`,
+        `{bold}Best{/bold}    ${state.best}`,
+      ];
       if (state.feedback === "correct") lines.push("", "{green-fg}{bold}Correct! ✓{/bold}{/green-fg}");
       if (state.feedback === "wrong") lines.push("", "{red-fg}{bold}Wrong ✗{/bold}{/red-fg}");
       lines.push("", "{grey-fg}type your answer,{/grey-fg}", "{grey-fg}enter to submit{/grey-fg}");

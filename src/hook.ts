@@ -1,6 +1,7 @@
 import { writeStatus, isWatcherAlive, type AgentStatus } from "./status.js";
 import { openWatcherTerminal } from "./launch-terminal.js";
 import { captureOriginWindow, focusOriginWindow, focusWatcherWindow } from "./focus.js";
+import { loadConfig } from "./config.js";
 
 const VALID: AgentStatus[] = ["working", "waiting", "done"];
 
@@ -14,6 +15,11 @@ export function runHookCommand(args: string[]): void {
 
   const status = statusArg as AgentStatus;
   writeStatus(status, agent);
+
+  // status.json is always kept truthful regardless of this setting — a
+  // manually-run `sidequest watch` still reflects reality either way. This
+  // only gates the automatic window open/focus behavior.
+  if (!loadConfig().autoOpen) return;
 
   if (status === "working") {
     if (isWatcherAlive()) {

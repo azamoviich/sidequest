@@ -190,7 +190,13 @@ export function buildQuizGame(id: string, title: string, source: QuizSource, fal
 
     sidebar(state) {
       if (state.loading) return ["{grey-fg}fetching questions...{/grey-fg}"];
-      const lines = [`{bold}Score{/bold}   ${state.score}`, `{bold}Streak{/bold}  ${state.streak}`, `{bold}Best{/bold}    ${state.best}`];
+      const streakTag = state.streak >= 5 ? "{red-fg}{bold}" : state.streak >= 3 ? "{yellow-fg}{bold}" : "";
+      const streakClose = state.streak >= 3 ? "{/bold}" + (state.streak >= 5 ? "{/red-fg}" : "{/yellow-fg}") : "";
+      const lines = [
+        `{bold}Score{/bold}   ${state.score}`,
+        `{bold}Streak{/bold}  ${streakTag}${state.streak}${streakClose}`,
+        `{bold}Best{/bold}    ${state.best}`,
+      ];
       if (state.feedback === "correct") lines.push("", "{green-fg}{bold}Correct! ✓{/bold}{/green-fg}");
       if (state.feedback === "wrong") lines.push("", "{red-fg}{bold}Wrong ✗{/bold}{/red-fg}");
       if (state.loadNote) lines.push("", `{yellow-fg}${state.loadNote}{/yellow-fg}`);

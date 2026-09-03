@@ -8,6 +8,10 @@ export interface Config {
   sound: boolean;
   difficulty: Difficulty;
   lastGame: string;
+  /** if false, a "working" hook event only updates status.json — it never
+   * auto-opens or refocuses a terminal window. `sidequest watch` still works
+   * manually regardless of this setting. */
+  autoOpen: boolean;
 }
 
 const DIR = join(homedir(), ".sidequest");
@@ -17,6 +21,7 @@ const DEFAULTS: Config = {
   sound: true,
   difficulty: "medium",
   lastGame: "snake",
+  autoOpen: true,
 };
 
 export function loadConfig(): Config {

@@ -45,7 +45,7 @@ export const snakeGame: Game<SnakeState> = {
         row
           .map((segIndex, x) => {
             if (x === state.food.x && y === state.food.y) return "{red-fg}{bold}●●{/bold}{/red-fg}";
-            if (segIndex === null) return "  ";
+            if (segIndex === null) return (x + y) % 2 === 0 ? "{grey-fg}·{/grey-fg} " : "  ";
             if (segIndex === 0) return "{light-green-fg}{bold}██{/bold}{/light-green-fg}";
             // alternating shade gives the body a segmented, gradient look
             const shade = segIndex % 2 === 0 ? "green" : "light-green";
@@ -57,9 +57,20 @@ export const snakeGame: Game<SnakeState> = {
   },
 
   sidebar(state) {
-    const lines = [`{bold}Score{/bold}  ${state.score}`];
-    if (!state.started && !state.gameOver) lines.push("", "{yellow-fg}press a direction{/yellow-fg}", "to start moving");
-    if (state.gameOver) lines.push("", "{red-fg}Game over{/red-fg}", "space = restart");
+    const lines = [`{bold}Score{/bold}  ${state.score}`, `{bold}Length{/bold} ${state.snake.length}`];
+    if (!state.started && !state.gameOver) {
+      lines.push("", "{yellow-fg}press a direction{/yellow-fg}", "{yellow-fg}to start moving{/yellow-fg}");
+    }
+    if (state.gameOver) {
+      lines.push(
+        "",
+        "{red-bg}{white-fg}{bold} GAME OVER {/bold}{/white-fg}{/red-bg}",
+        "",
+        `final score: {bold}${state.score}{/bold}`,
+        "",
+        "{grey-fg}space = restart{/grey-fg}"
+      );
+    }
     return lines;
   },
 

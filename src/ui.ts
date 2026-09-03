@@ -53,6 +53,9 @@ const RAINBOW = ["red", "yellow", "green", "cyan", "blue", "magenta"];
 // consistent with each other.
 const CONTENT_WIDTH = 78;
 
+// sound, difficulty, auto-open, run setup, back
+const SETTINGS_ROW_COUNT = 5;
+
 function rainbowText(text: string): string {
   return [...text].map((ch, i) => (ch === " " ? " " : `{${RAINBOW[i % RAINBOW.length]}-fg}{bold}${ch}{/bold}{/${RAINBOW[i % RAINBOW.length]}-fg}`)).join("");
 }
@@ -388,7 +391,10 @@ export function runGameUI(opts: RunOptions): void {
       top: 4,
       left: "center",
       width: CONTENT_WIDTH,
-      height: 8,
+      // 5 rows (sound, difficulty, auto-open, run setup, back), double-spaced
+      // — same undercounting mistake bit the main menu once already, so this
+      // is deliberately generous rather than exactly-computed.
+      height: 2 * SETTINGS_ROW_COUNT + 5,
       tags: true,
       padding: { left: 2, right: 2, top: 1, bottom: 1 },
       border: { type: "line" },
@@ -417,6 +423,8 @@ export function runGameUI(opts: RunOptions): void {
     const rows = [
       `Sound: ${config.sound ? "{green-fg}ON{/green-fg}" : "{grey-fg}off{/grey-fg}"}`,
       `Difficulty: {cyan-fg}${config.difficulty}{/cyan-fg}`,
+      `Auto-open game on prompt: ${config.autoOpen ? "{green-fg}ON{/green-fg}" : "{grey-fg}off{/grey-fg}"}`,
+      "Run setup wizard  {grey-fg}(wire up Claude Code / Cursor / Copilot CLI){/grey-fg}",
       "Back",
     ];
     const styled = rows.map((r, i) => (mode.kind === "settings" && mode.index === i ? `{inverse}{bold} > ${r} {/bold}{/inverse}` : `   ${r}`));
@@ -436,9 +444,29 @@ export function runGameUI(opts: RunOptions): void {
       config.difficulty = difficulties[(i + 1) % difficulties.length];
       saveConfig(config);
       renderSettings();
+    } else if (mode.index === 2) {
+      config.autoOpen = !config.autoOpen;
+      saveConfig(config);
+      renderSettings();
+    } else if (mode.index === 3) {
+      runSetupFromUI();
     } else {
       goToMenu();
     }
+  }
+
+  // Leaves the blessed TUI entirely to run the real interactive setup
+  // wizard (it needs actual readline/stdin, which conflicts with blessed's
+  // own raw-mode input handling) — exits the process when done rather than
+  // trying to re-enter the TUI, since terminal mode was just handed back.
+  function runSetupFromUI() {
+    if (tickTimer) clearInterval(tickTimer);
+    if (statusPollTimer) clearInterval(statusPollTimer);
+    screen.destroy();
+    console.log("");
+    import("./setup.js").then(({ runSetupWizard }) =>
+      runSetupWizard().then(() => process.exit(0))
+    );
   }
 
   // --- game ---
@@ -654,7 +682,7 @@ export function runGameUI(opts: RunOptions): void {
     }
 
     if (mode.kind === "settings") {
-      const count = 3;
+      const count = SETTINGS_ROW_COUNT;
       if (keyName === "up") mode.index = (mode.index - 1 + count) % count;
       else if (keyName === "down") mode.index = (mode.index + 1) % count;
       else if (keyName === "enter" || keyName === "space") {

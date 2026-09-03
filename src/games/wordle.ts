@@ -209,9 +209,11 @@ export const wordleGame: Game<WordleState> = {
     const colorFor: Record<string, string> = { correct: "green", present: "yellow", absent: "grey" };
     const kb = order.map((l) => {
       const st = state.letterStates[l];
-      return st ? `{${colorFor[st]}-fg}${l}{/${colorFor[st]}-fg}` : `{grey-fg}${l}{/grey-fg}`;
+      // used letters get a filled background tile (matches the grid's visual
+      // language); untried letters stay plain so the eye can find them fast
+      return st ? `{${colorFor[st]}-bg}{black-fg}${l}{/black-fg}{/${colorFor[st]}-bg}` : `{white-fg}${l}{/white-fg}`;
     });
-    lines.push("", kb.slice(0, 10).join(""), kb.slice(10, 19).join(""), kb.slice(19).join(""));
+    lines.push("", "{bold}Keyboard{/bold}", kb.slice(0, 10).join(" "), " " + kb.slice(10, 19).join(" "), "  " + kb.slice(19).join(" "));
     return lines;
   },
 
