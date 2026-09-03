@@ -42,22 +42,17 @@ sidequest -- claude -p "refactor the auth module" --dangerously-skip-permissions
 
 ## What you actually get
 
-**11 games across 8 categories**, all playable straight from one menu — no config, no setup required to just play:
+**62 games across 8 categories**, all playable straight from one menu — no config, no setup required to just play:
 
 | | |
 |---|---|
-| 🐍 **Snake** | Difficulty-scaled speed, checkerboard floor, gradient body, doesn't move until you press a key |
-| 🟩 **Wordle** | 6 guesses, colored tiles, filled on-screen keyboard — validated against a real ~16,000-word dictionary |
-| ⭕ **Tic-Tac-Toe** | Real minimax AI — exhaustively searches the whole game tree, so it's genuinely unbeatable (best you'll do is draw) |
-| 🔢 **2048** | Real slide/merge logic, milestone XP at 128/256/512/1024/2048 |
-| 🕵️ **Detective Mode** | 3 original mystery cases — browse evidence (logs, statements, config, with a deliberate red herring per case), type your conclusion |
 | ☀️ **Daily Challenge** | One puzzle a day, same for everyone (deterministic by date) — logic, math, pattern recognition, riddles, lateral thinking, spot-the-bug, estimation, cryptography |
-| 🧠 **Trivia** *(live, 5 categories)* | Mixed / Movies / Music / Science / Geography — pulled fresh from [Open Trivia DB](https://opentdb.com), falls back to a bundled set if you're offline |
-| ⌨️ **Coding Quiz** *(5 categories)* | Frontend / Backend / Node.js / Algorithms / Git — type the answer, not multiple choice |
+| 🎮 **Games** | Snake, Wordle, Tic-Tac-Toe (unbeatable minimax AI), 2048, Detective Mode (3 original mystery cases) |
+| 🧩 **Quizzes** | **Trivia** *(live, 5 categories)* — Mixed / Movies / Music / Science / Geography, pulled fresh from [Open Trivia DB](https://opentdb.com); **Coding Quiz** *(5 categories)* — Frontend / Backend / Node.js / Algorithms / Git, type the answer, not multiple choice |
 | 🐛 **Spot the Bug** *(9 categories)* | JavaScript / Python / SQL / Git / Algorithms / Linux / Regex / HTTP / Docker — short buggy snippets, type the fix |
 | 🔐 **Cryptography Puzzles** *(4 types)* | Base64, Caesar cipher, ROT13, Hash ID — all **procedurally generated**, endless unique puzzles |
-| 📚 **Library** | 10 curated public-domain books (Pride and Prejudice, Sherlock Holmes, Frankenstein, Dracula, and more) plus live search across Project Gutenberg's full ~70k-book catalog — reading position saved per book |
-| 🎓 **Learn Something in 5 Minutes** | 4 original micro-lessons (quantum superposition, how HTTPS actually works, hash tables, how git actually works) — bite-sized explanation + quick check per step |
+| 📚 **Library** | 23 curated public-domain books (Pride and Prejudice, Sherlock Holmes, Frankenstein, Dracula, Jane Eyre, Moby Dick, Crime and Punishment, and more) plus live search across Project Gutenberg's full ~70k-book catalog — reading position saved per book |
+| 🎓 **Learn Something in 5 Minutes** | 9 original micro-lessons (quantum superposition, HTTPS/TLS, hash tables, git internals, DNS, Big O, Docker, REST APIs, stack vs heap) — bite-sized explanation + quick check per step |
 
 Difficulty (easy/medium/hard, one setting for everything) actually changes the *content* — the real difficulty of trivia questions fetched from the API, not just a cosmetic label.
 
