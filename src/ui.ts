@@ -10,7 +10,8 @@ import { playSfx, setSoundEnabled } from "./sound.js";
 import type { CommandResult } from "./runner.js";
 import { readStatus, heartbeatWatcher, type AgentStatus } from "./status.js";
 import { getTriviaQuestions } from "./games/data/opentdb.js";
-import { LIBRARY_BOOKS } from "./games/data/gutendex.js";
+import { LIBRARY_BOOKS, searchBooks } from "./games/data/gutendex.js";
+import { buildReaderGame } from "./games/reader.js";
 
 type RunOptions =
   | {
@@ -155,6 +156,52 @@ export function runGameUI(opts: RunOptions): void {
     mode = { kind: "submenu", group, index: 0 };
     renderSubmenu();
   };
+
+  // Live search across the full Gutenberg catalog (~70k books), not just the
+  // curated Library list — uses blessed's built-in prompt widget rather than
+  // hand-rolling text capture, since it's a one-off modal input, not a
+  // full-screen game needing the general capturesTextInput key-routing path.
+  function openLibrarySearch() {
+    const prompt = blessed.prompt({
+      top: "center",
+      left: "center",
+      width: "60%",
+      height: 8,
+      border: { type: "line" },
+      tags: true,
+      label: " search Gutenberg ",
+      style: { border: { fg: "magenta" } },
+    });
+    screen.append(prompt);
+    prompt.input("Search title or author:", "", (err, value) => {
+      screen.remove(prompt);
+      screen.render();
+      if (err || !value || !value.trim()) return;
+
+      const loadingGroup: GameGroup = { kind: "group", id: "library-search", title: `Results for "${value}"`, color: "magenta", games: [] };
+      goToSubmenu(loadingGroup);
+      submenuBody?.setContent("{grey-fg}searching...{/grey-fg}");
+      screen.render();
+
+      searchBooks(value.trim())
+        .then((results) => {
+          if (mode.kind !== "submenu" || mode.group.id !== "library-search") return; // user navigated away
+          const resultGroup: GameGroup = {
+            kind: "group",
+            id: "library-search",
+            title: `Results for "${value}" (${results.length})`,
+            color: "magenta",
+            games: results.map((b) => buildReaderGame(b)),
+          };
+          goToSubmenu(resultGroup);
+        })
+        .catch(() => {
+          if (mode.kind !== "submenu" || mode.group.id !== "library-search") return;
+          submenuBody?.setContent("{red-fg}search failed — check your connection{/red-fg}");
+          screen.render();
+        });
+    });
+  }
 
   let tickSecondCounter = 0;
 
@@ -345,7 +392,9 @@ export function runGameUI(opts: RunOptions): void {
       height: 3,
       tags: true,
       align: "center",
-      content: "{grey-fg}↑↓ move   enter select   esc back   q quit{/grey-fg}",
+      content: group.id.startsWith("library")
+        ? "{grey-fg}↑↓ move   enter select   / search   esc back   q quit{/grey-fg}"
+        : "{grey-fg}↑↓ move   enter select   esc back   q quit{/grey-fg}",
     });
 
     screen.append(title);
@@ -677,6 +726,10 @@ export function runGameUI(opts: RunOptions): void {
     }
 
     if (mode.kind === "submenu") {
+      if (keyName === "/" && mode.group.id.startsWith("library")) {
+        openLibrarySearch();
+        return;
+      }
       const count = mode.group.games.length + 1; // +1 for Back
       if (keyName === "up") mode.index = (mode.index - 1 + count) % count;
       else if (keyName === "down") mode.index = (mode.index + 1) % count;

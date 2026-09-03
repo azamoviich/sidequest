@@ -43,8 +43,8 @@ export function runHookCommand(args: string[]): void {
   }
 
   if (status === "done") {
-    focusOriginWindowWithPrompt("Agent finished — opening in 3s");
+    focusOriginWindowWithPrompt("Agent finished — opening in 5s");
   } else if (status === "waiting") {
-    focusOriginWindowWithPrompt("Agent needs you — opening in 3s");
+    focusOriginWindowWithPrompt("Agent needs you — opening in 5s");
   }
 }

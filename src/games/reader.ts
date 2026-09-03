@@ -69,42 +69,61 @@ function paginate(lines: string[]): string[][] {
 
 export interface ReaderState {
   book: BookMeta;
-  loading: boolean;
+  phase: "confirm-resume" | "loading" | "error" | "reading";
   error: string | null;
   pages: string[][];
   page: number;
+  savedPage: number;
 }
 
 export function buildReaderGame(book: BookMeta): Game<ReaderState> {
+  function startLoading(state: ReaderState) {
+    state.phase = "loading";
+    fetchBookText(book.id)
+      .then((raw) => {
+        const lines = wrapText(stripBoilerplate(raw), PAGE_WIDTH);
+        state.pages = paginate(lines);
+        state.page = Math.min(state.page, state.pages.length - 1);
+        state.phase = "reading";
+      })
+      .catch((err) => {
+        state.error = err instanceof Error ? err.message : "failed to load book";
+        state.phase = "error";
+      });
+  }
+
   return {
     id: `library-${book.id}`,
     title: book.title,
     tickIntervalMs: null,
 
     init(_ctx: GameContext): ReaderState {
+      const savedPage = loadProgress()[String(book.id)] ?? 0;
       const state: ReaderState = {
         book,
-        loading: true,
+        phase: savedPage > 0 ? "confirm-resume" : "loading",
         error: null,
         pages: [[]],
-        page: loadProgress()[String(book.id)] ?? 0,
+        page: savedPage,
+        savedPage,
       };
-      fetchBookText(book.id)
-        .then((raw) => {
-          const lines = wrapText(stripBoilerplate(raw), PAGE_WIDTH);
-          state.pages = paginate(lines);
-          state.page = Math.min(state.page, state.pages.length - 1);
-          state.loading = false;
-        })
-        .catch((err) => {
-          state.error = err instanceof Error ? err.message : "failed to load book";
-          state.loading = false;
-        });
+      if (state.phase === "loading") startLoading(state);
       return state;
     },
 
     handleKey(state, key) {
-      if (state.loading || state.error) return;
+      if (state.phase === "confirm-resume") {
+        if (key === "enter" || key === "r" || key === "y") {
+          // keep state.page = savedPage, resume
+          startLoading(state);
+        } else if (key === "s" || key === "n") {
+          state.page = 0;
+          startLoading(state);
+        }
+        return;
+      }
+
+      if (state.phase !== "reading") return;
       if (key === "right" || key === "down" || key === "space" || key === "n") {
         if (state.page < state.pages.length - 1) {
           state.page += 1;
@@ -119,13 +138,22 @@ export function buildReaderGame(book: BookMeta): Game<ReaderState> {
     },
 
     render(state) {
-      if (state.loading) return "{grey-fg}loading book...{/grey-fg}";
-      if (state.error) return `{red-fg}couldn't load this book: ${escapeTags(state.error)}{/red-fg}`;
+      if (state.phase === "confirm-resume") {
+        return [
+          `{bold}${escapeTags(state.book.title)}{/bold}`,
+          "",
+          `You were on page {bold}${state.savedPage + 1}{/bold}.`,
+          "",
+          "{green-fg}{bold}[Enter] Resume{/bold}{/green-fg}   {yellow-fg}{bold}[S] Start over{/bold}{/yellow-fg}",
+        ].join("\n");
+      }
+      if (state.phase === "loading") return "{grey-fg}loading book... (first load can take a moment for longer books){/grey-fg}";
+      if (state.phase === "error") return `{red-fg}couldn't load this book: ${escapeTags(state.error ?? "")}{/red-fg}\n\n{grey-fg}m to go back and try again{/grey-fg}`;
       return state.pages[state.page].map(escapeTags).join("\n");
     },
 
     sidebar(state) {
-      if (state.loading || state.error) return [];
+      if (state.phase !== "reading") return [];
       const pct = Math.round(((state.page + 1) / state.pages.length) * 100);
       return [
         `{bold}${escapeTags(state.book.title)}{/bold}`,

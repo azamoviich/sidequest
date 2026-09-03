@@ -89,9 +89,9 @@ export function focusOriginWindow(): void {
 
 /**
  * Same as focusOriginWindow(), but shows a small popup first: "Agent
- * finished — opening in 3s" with Postpone / Open Now buttons. Clicking
+ * finished — opening in 5s" with Postpone / Open Now buttons. Clicking
  * Postpone skips the focus-switch this time; clicking Open Now or just
- * letting the 3s countdown run out both trigger it. Real macOS Notification
+ * letting the 5s countdown run out both trigger it. Real macOS Notification
  * Center banners can't carry custom action buttons without a registered app
  * bundle, so `display dialog` (a small modal popup, not a notification
  * banner) is the closest thing actually scriptable from a CLI hook.
@@ -118,7 +118,7 @@ export function focusOriginWindowWithPrompt(message: string): void {
 
     const escapedMessage = message.replace(/"/g, '\\"');
     const script = `
-      set dlgResult to display dialog "${escapedMessage}" with title "sidequest" buttons {"Postpone", "Open Now"} default button "Open Now" giving up after 3
+      set dlgResult to display dialog "${escapedMessage}" with title "sidequest" buttons {"Postpone", "Open Now"} default button "Open Now" giving up after 5
       if (gave up of dlgResult) or (button returned of dlgResult is "Open Now") then
         ${focusCmd}
       end if

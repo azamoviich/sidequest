@@ -31,19 +31,30 @@ function cacheFile(id: number): string {
   return join(CACHE_DIR, `${id}.txt`);
 }
 
+async function fetchWithRetry(url: string, timeoutMs: number): Promise<Response> {
+  try {
+    return await fetch(url, { signal: AbortSignal.timeout(timeoutMs) });
+  } catch (err) {
+    // one retry — Gutenberg's file servers are occasionally just slow, not down
+    return await fetch(url, { signal: AbortSignal.timeout(timeoutMs) });
+  }
+}
+
 /** Fetches a book's full plain text from Project Gutenberg (via its Gutendex API wrapper), caching it to disk permanently — public-domain text doesn't go stale. */
 export async function fetchBookText(id: number): Promise<string> {
   const cached = cacheFile(id);
   if (existsSync(cached)) return readFileSync(cached, "utf8");
 
-  const metaRes = await fetch(`https://gutendex.com/books/${id}`, { signal: AbortSignal.timeout(10_000) });
+  const metaRes = await fetchWithRetry(`https://gutendex.com/books/${id}`, 15_000);
   if (!metaRes.ok) throw new Error(`gutendex: HTTP ${metaRes.status}`);
   const meta = await metaRes.json();
 
   const textUrl: string | undefined = meta.formats?.["text/plain; charset=utf-8"] ?? meta.formats?.["text/plain"];
   if (!textUrl) throw new Error("no plain-text format available for this book");
 
-  const textRes = await fetch(textUrl, { signal: AbortSignal.timeout(15_000) });
+  // Full novels can be 500KB-1MB+ of plain text — a slow connection genuinely
+  // needs more than a few seconds here, not just a retry.
+  const textRes = await fetchWithRetry(textUrl, 45_000);
   if (!textRes.ok) throw new Error(`gutenberg: HTTP ${textRes.status}`);
   const text = await textRes.text();
 
@@ -54,4 +65,18 @@ export async function fetchBookText(id: number): Promise<string> {
     // caching is best-effort
   }
   return text;
+}
+
+export interface SearchResult extends BookMeta {}
+
+/** Live search against the full Gutenberg catalog (~70k books), not just the curated list. */
+export async function searchBooks(query: string): Promise<SearchResult[]> {
+  const res = await fetchWithRetry(`https://gutendex.com/books/?search=${encodeURIComponent(query)}`, 15_000);
+  if (!res.ok) throw new Error(`gutendex: HTTP ${res.status}`);
+  const data = await res.json();
+  return (data.results ?? []).slice(0, 15).map((b: any) => ({
+    id: b.id,
+    title: b.title,
+    author: b.authors?.[0]?.name ?? "Unknown",
+  }));
 }
