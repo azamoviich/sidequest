@@ -20,6 +20,8 @@ import { tictactoeGame } from "./tictactoe.js";
 import { game2048 } from "./game2048.js";
 import { detectiveGame } from "./detective.js";
 import { buildReaderGame } from "./reader.js";
+import { buildLessonGame } from "./lesson.js";
+import { LESSONS } from "./data/lessons.js";
 import { progressGame } from "./progress-screen.js";
 import { dailyChallengeGame } from "./daily-challenge.js";
 import { LIBRARY_BOOKS } from "./data/gutendex.js";
@@ -62,6 +64,8 @@ export const cryptoGames: Game<any>[] = [
   buildCryptoGame("crypto-hashid", "Hash ID", generateHashIdPuzzle),
 ];
 
+export const lessonGames: Game<any>[] = LESSONS.map((lesson) => buildLessonGame(lesson));
+
 export const libraryGames: Game<any>[] = LIBRARY_BOOKS.map((book) => buildReaderGame(book));
 
 export interface GameGroup {
@@ -86,6 +90,7 @@ export const menuEntries: MenuEntry[] = [
   { kind: "group", id: "debug", title: "Spot the Bug", color: "red", games: debugGames },
   { kind: "group", id: "crypto", title: "Cryptography Puzzles", color: "green", games: cryptoGames },
   { kind: "group", id: "library", title: "Library (public-domain books)", color: "magenta", games: libraryGames },
+  { kind: "group", id: "learn", title: "Learn Something in 5 Minutes", color: "blue", games: lessonGames },
   { kind: "game", game: progressGame },
 ];
 
@@ -103,6 +108,7 @@ export const games: Game<any>[] = [
   ...debugGames,
   ...cryptoGames,
   ...libraryGames,
+  ...lessonGames,
   progressGame,
 ];
 

@@ -12,6 +12,7 @@ import { readStatus, heartbeatWatcher, type AgentStatus } from "./status.js";
 import { touchDailyStreak, addProductiveMs } from "./progress.js";
 import { getTriviaQuestions } from "./games/data/opentdb.js";
 import { LIBRARY_BOOKS, searchBooks } from "./games/data/gutendex.js";
+import { LESSONS } from "./games/data/lessons.js";
 import { buildReaderGame } from "./games/reader.js";
 
 type RunOptions =
@@ -63,6 +64,10 @@ const GAME_THEME: Record<string, string> = {
   "2048": "yellow",
   detective: "magenta",
 };
+
+for (const lesson of LESSONS) {
+  GAME_THEME[`lesson-${lesson.id}`] = "blue";
+}
 
 for (const book of LIBRARY_BOOKS) {
   GAME_THEME[`library-${book.id}`] = "magenta";
