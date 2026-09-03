@@ -55,6 +55,10 @@ const GAME_THEME: Record<string, string> = {
   "debug-regex": "red",
   "debug-http": "red",
   "debug-docker": "red",
+  "crypto-base64": "green",
+  "crypto-caesar": "green",
+  "crypto-rot13": "green",
+  "crypto-hashid": "green",
 };
 
 for (const book of LIBRARY_BOOKS) {

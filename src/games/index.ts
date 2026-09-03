@@ -20,6 +20,8 @@ import { buildReaderGame } from "./reader.js";
 import { progressGame } from "./progress-screen.js";
 import { dailyChallengeGame } from "./daily-challenge.js";
 import { LIBRARY_BOOKS } from "./data/gutendex.js";
+import { buildCryptoGame } from "./crypto-engine.js";
+import { generateBase64Puzzle, generateCaesarPuzzle, generateRot13Puzzle, generateHashIdPuzzle } from "./data/crypto-puzzles.js";
 import type { Game } from "./types.js";
 
 export const triviaGames: Game<any>[] = [
@@ -50,6 +52,13 @@ export const debugGames: Game<any>[] = [
   buildTypingQuizGame("debug-docker", "Docker", dockerDebugQuestions),
 ];
 
+export const cryptoGames: Game<any>[] = [
+  buildCryptoGame("crypto-base64", "Base64 Decode", generateBase64Puzzle),
+  buildCryptoGame("crypto-caesar", "Caesar Cipher", generateCaesarPuzzle),
+  buildCryptoGame("crypto-rot13", "ROT13", generateRot13Puzzle),
+  buildCryptoGame("crypto-hashid", "Hash ID", generateHashIdPuzzle),
+];
+
 export const libraryGames: Game<any>[] = LIBRARY_BOOKS.map((book) => buildReaderGame(book));
 
 export interface GameGroup {
@@ -69,6 +78,7 @@ export const menuEntries: MenuEntry[] = [
   { kind: "group", id: "trivia", title: "Trivia Quiz (live)", color: "yellow", games: triviaGames },
   { kind: "group", id: "coding", title: "Coding Quiz (type the answer)", color: "cyan", games: codingGames },
   { kind: "group", id: "debug", title: "Spot the Bug", color: "red", games: debugGames },
+  { kind: "group", id: "crypto", title: "Cryptography Puzzles", color: "green", games: cryptoGames },
   { kind: "group", id: "library", title: "Library (public-domain books)", color: "magenta", games: libraryGames },
   { kind: "game", game: progressGame },
 ];
@@ -82,6 +92,7 @@ export const games: Game<any>[] = [
   ...triviaGames,
   ...codingGames,
   ...debugGames,
+  ...cryptoGames,
   ...libraryGames,
   progressGame,
 ];
