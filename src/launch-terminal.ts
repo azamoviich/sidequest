@@ -1,7 +1,7 @@
 import { spawn } from "node:child_process";
 
 /**
- * Opens a new terminal window running `waitplay watch`. Only macOS (via
+ * Opens a new terminal window running `sidequest watch`. Only macOS (via
  * osascript/Terminal.app) is automated — that's the one OS with a reliable,
  * dependency-free way to script "open a new terminal window running X".
  * Linux terminal emulators vary too much (gnome-terminal, konsole, alacritty,

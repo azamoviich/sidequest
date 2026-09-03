@@ -27,9 +27,9 @@ export const claudeCodeAdapter: AgentAdapter = {
     const config = readJsonConfig(path);
     config.hooks = config.hooks ?? {};
 
-    addHook(config.hooks, "UserPromptSubmit", "waitplay hook working claude-code");
-    addHook(config.hooks, "Stop", "waitplay hook done claude-code");
-    addHook(config.hooks, "Notification", "waitplay hook waiting claude-code", "");
+    addHook(config.hooks, "UserPromptSubmit", "sidequest hook working claude-code");
+    addHook(config.hooks, "Stop", "sidequest hook done claude-code");
+    addHook(config.hooks, "Notification", "sidequest hook waiting claude-code", "");
 
     writeJsonConfig(path, config);
     return { ok: true, message: `Hooks added to ${path}`, configPath: path };

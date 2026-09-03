@@ -3,7 +3,7 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 
-const FILE = join(homedir(), ".waitplay", "origin-window.json");
+const FILE = join(homedir(), ".sidequest", "origin-window.json");
 
 /**
  * Records which Terminal.app window was frontmost right before we open the
@@ -18,7 +18,7 @@ export function captureOriginWindow(): void {
       encoding: "utf8",
     }).trim();
     if (!id) return;
-    mkdirSync(join(homedir(), ".waitplay"), { recursive: true });
+    mkdirSync(join(homedir(), ".sidequest"), { recursive: true });
     writeFileSync(FILE, JSON.stringify({ windowId: id }));
   } catch {
     // Terminal.app not frontmost, or another terminal emulator entirely —

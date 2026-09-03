@@ -10,7 +10,7 @@ export interface Config {
   lastGame: string;
 }
 
-const DIR = join(homedir(), ".waitplay");
+const DIR = join(homedir(), ".sidequest");
 const FILE = join(DIR, "config.json");
 
 const DEFAULTS: Config = {

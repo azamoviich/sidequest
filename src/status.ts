@@ -10,7 +10,7 @@ export interface StatusRecord {
   agent?: string;
 }
 
-const DIR = join(homedir(), ".waitplay");
+const DIR = join(homedir(), ".sidequest");
 const FILE = join(DIR, "status.json");
 const WATCH_PID_FILE = join(DIR, "watch.pid");
 
@@ -29,7 +29,7 @@ export function readStatus(): StatusRecord | null {
   }
 }
 
-/** True if a `waitplay watch` process registered itself recently (heartbeat within the last 10s). */
+/** True if a `sidequest watch` process registered itself recently (heartbeat within the last 10s). */
 export function isWatcherAlive(): boolean {
   try {
     if (!existsSync(WATCH_PID_FILE)) return false;

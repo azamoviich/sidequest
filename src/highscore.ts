@@ -2,7 +2,7 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 
-const DIR = join(homedir(), ".waitplay");
+const DIR = join(homedir(), ".sidequest");
 const FILE = join(DIR, "highscore.json");
 
 type Store = Record<string, number>;

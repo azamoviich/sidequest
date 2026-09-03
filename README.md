@@ -1,11 +1,11 @@
-# waitplay
+# sidequest
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 **Play a terminal game while your coding agent works — instead of doomscrolling.**
 
 ```bash
-waitplay -- claude -p "refactor the auth module" --dangerously-skip-permissions
+sidequest -- claude -p "refactor the auth module" --dangerously-skip-permissions
 ```
 
 That wraps any one-shot, unattended command — a long agent run, `npm install`, `docker build`, a test suite — and drops you into a game while it runs in the background. The instant it finishes, you get the exit code and output.
@@ -15,21 +15,21 @@ That wraps any one-shot, unattended command — a long agent run, `npm install`,
 **Wrap mode** — for any single command that runs to completion unattended:
 
 ```bash
-waitplay -- <command> [args...]
+sidequest -- <command> [args...]
 ```
 
-Works with literally anything: `waitplay -- npm install`, `waitplay -- docker build -t app .`, `waitplay -- claude -p "..." --dangerously-skip-permissions`.
+Works with literally anything: `sidequest -- npm install`, `sidequest -- docker build -t app .`, `sidequest -- claude -p "..." --dangerously-skip-permissions`.
 
 **Watch mode** — a persistent session for interactive coding-agent sessions (Claude Code, Cursor, GitHub Copilot CLI), showing live status instead of "process running / not running":
 
 ```bash
-waitplay setup   # one-time: wires hooks into your agent(s) of choice
+sidequest setup   # one-time: wires hooks into your agent(s) of choice
 ```
 
-After setup, sending your agent a prompt auto-opens a terminal running `waitplay watch`. It shows **● working** while the agent is going, flips to **● needs you!** the moment it's blocked on a permission prompt or waiting on you, and **✓ finished** when it's done — so you know exactly when to switch back, without staring at the other window.
+After setup, sending your agent a prompt auto-opens a terminal running `sidequest watch`. It shows **● working** while the agent is going, flips to **● needs you!** the moment it's blocked on a permission prompt or waiting on you, and **✓ finished** when it's done — so you know exactly when to switch back, without staring at the other window.
 
 ```bash
-waitplay watch   # can also be run manually, doesn't require setup
+sidequest watch   # can also be run manually, doesn't require setup
 ```
 
 ## Games
@@ -39,7 +39,7 @@ waitplay watch   # can also be run manually, doesn't require setup
 - **Geography Quiz** — flags (rendered as real color bands, not emoji — works in every terminal) and capitals
 - **History Quiz** — world history trivia
 
-All games persist high scores and settings (sound on/off, difficulty) in `~/.waitplay/`.
+All games persist high scores and settings (sound on/off, difficulty) in `~/.sidequest/`.
 
 ## Agent hook support
 
@@ -50,16 +50,16 @@ All games persist high scores and settings (sound on/off, difficulty) in `~/.wai
 | GitHub Copilot CLI | ⚠️ best-effort | only the "waiting for input" event is documented publicly; start/done aren't |
 | Aider / anything else | — | no hook mechanism exists — use **wrap mode** instead, works with any CLI |
 
-`waitplay setup` lets you pick which agent(s) to install for and whether to install globally (every project) or just the current one. It only adds/merges its own hook entries — it won't touch or remove anything else already in your config.
+`sidequest setup` lets you pick which agent(s) to install for and whether to install globally (every project) or just the current one. It only adds/merges its own hook entries — it won't touch or remove anything else already in your config.
 
 ## Install
 
 ```bash
-git clone https://github.com/azamoviich/waitplay
-cd waitplay
+git clone https://github.com/azamoviich/sidequest
+cd sidequest
 npm install
 npm run build
-npm link   # makes the `waitplay` command available globally
+npm link   # makes the `sidequest` command available globally
 ```
 
 ## How it's built

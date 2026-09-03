@@ -1,10 +1,10 @@
 {
-  "name": "waitplay",
+  "name": "sidequest-cli",
   "version": "0.1.0",
   "description": "Play a terminal game while any slow command runs. Wrap Claude Code, npm install, docker build — anything.",
   "type": "module",
   "bin": {
-    "waitplay": "./dist/cli.js"
+    "sidequest": "./dist/cli.js"
   },
   "files": [
     "dist"
@@ -28,7 +28,7 @@
   "author": "",
   "repository": {
     "type": "git",
-    "url": "https://github.com/azamoviich/waitplay"
+    "url": "https://github.com/azamoviich/sidequest"
   },
   "engines": {
     "node": ">=18"

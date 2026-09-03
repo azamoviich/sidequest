@@ -29,7 +29,7 @@ export function runCommand(command: string, args: string[]): {
       resolve({ code, signal, durationMs: Date.now() - start, outputTail: tail });
     });
     child.on("error", (err) => {
-      tail += `\n[waitplay] failed to launch command: ${err.message}`;
+      tail += `\n[sidequest] failed to launch command: ${err.message}`;
       resolve({ code: null, signal: null, durationMs: Date.now() - start, outputTail: tail });
     });
   });

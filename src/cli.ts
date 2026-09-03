@@ -14,7 +14,7 @@ import type { CommandResult } from "./runner.js";
 // from a genuine freeze. Log the real error instead of dying silently.
 function logCrash(label: string, err: unknown): void {
   try {
-    const dir = join(homedir(), ".waitplay");
+    const dir = join(homedir(), ".sidequest");
     mkdirSync(dir, { recursive: true });
     const stack = err instanceof Error ? err.stack ?? err.message : String(err);
     appendFileSync(join(dir, "crash.log"), `[${new Date().toISOString()}] ${label}\n${stack}\n\n`);
@@ -33,18 +33,20 @@ process.on("unhandledRejection", (err) => {
 });
 
 function printHelp(): void {
-  console.log(`waitplay — play a terminal game while any slow command runs
+  console.log(`sidequest — play a terminal game while any slow command runs
 
 Usage:
-  waitplay -- <command> [args...]     wrap a one-shot command (npm install, docker build, ...)
-  waitplay watch                      persistent session that shows live agent status (working/waiting/done)
-  waitplay setup                      wire waitplay into Claude Code / Cursor / Copilot CLI hooks
-  waitplay hook <working|waiting|done> [agentId]   called by an installed hook — not for manual use
+  sidequest                            just open the menu and play — nothing to wait on required
+  sidequest -- <command> [args...]     wrap a one-shot command (npm install, docker build, ...)
+  sidequest watch                      persistent session that shows live agent status (working/waiting/done)
+  sidequest setup                      wire sidequest into Claude Code / Cursor / Copilot CLI hooks
+  sidequest hook <working|waiting|done> [agentId]   called by an installed hook — not for manual use
 
 Examples:
-  waitplay -- claude -p "refactor the auth module" --dangerously-skip-permissions
-  waitplay -- npm install
-  waitplay setup
+  sidequest
+  sidequest -- claude -p "refactor the auth module" --dangerously-skip-permissions
+  sidequest -- npm install
+  sidequest setup
 
 Options:
   -h, --help    show this help
@@ -63,7 +65,7 @@ function runWrapMode(cmdArgs: string[]): void {
     killCommand: kill,
     onExit: (result: CommandResult | null) => {
       if (result) {
-        process.stdout.write("\n--- waitplay: command finished ---\n");
+        process.stdout.write("\n--- sidequest: command finished ---\n");
         process.stdout.write(`exit code: ${result.code ?? "n/a"}${result.signal ? ` (signal ${result.signal})` : ""}\n`);
         process.stdout.write(`duration:  ${(result.durationMs / 1000).toFixed(1)}s\n`);
         if (result.outputTail.trim()) {
@@ -88,9 +90,16 @@ function runWatchMode(): void {
 async function main(): Promise<void> {
   const argv = process.argv.slice(2);
 
-  if (argv.length === 0 || argv[0] === "-h" || argv[0] === "--help") {
+  if (argv[0] === "-h" || argv[0] === "--help") {
     printHelp();
     process.exit(0);
+  }
+
+  if (argv.length === 0) {
+    // Bare `sidequest`, no wrapped command — just open the menu, same as
+    // `sidequest watch` but usable standalone without any hook/status setup.
+    runWatchMode();
+    return;
   }
 
   if (argv[0] === "watch") {
@@ -112,7 +121,7 @@ async function main(): Promise<void> {
   const cmdArgs = sepIndex >= 0 ? argv.slice(sepIndex + 1) : argv;
 
   if (cmdArgs.length === 0) {
-    console.error("waitplay: no command given. Usage: waitplay -- <command> [args...]");
+    console.error("sidequest: no command given. Usage: sidequest -- <command> [args...]");
     process.exit(1);
   }
 

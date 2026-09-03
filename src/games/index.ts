@@ -2,7 +2,7 @@ import { snakeGame } from "./snake.js";
 import { buildQuizGame } from "./quiz-engine.js";
 import { flagQuestions } from "./data/flags.js";
 import { historyQuestions } from "./data/history.js";
-import { fetchTriviaQuestions } from "./data/opentdb.js";
+import { getTriviaQuestions } from "./data/opentdb.js";
 import { wordleGame } from "./wordle.js";
 import type { Game } from "./types.js";
 
@@ -10,7 +10,7 @@ export const games: Game<any>[] = [
   snakeGame,
   wordleGame,
   buildQuizGame("geography", "Geography Quiz (flags & capitals)", flagQuestions),
-  buildQuizGame("trivia", "Trivia Quiz (live — film, science, history & more)", () => fetchTriviaQuestions(50), historyQuestions),
+  buildQuizGame("trivia", "Trivia Quiz (live — film, science, history & more)", () => getTriviaQuestions(25), historyQuestions),
 ];
 
 export function getGame(id: string): Game<any> {

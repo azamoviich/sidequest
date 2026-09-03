@@ -27,8 +27,8 @@ export const cursorAdapter: AgentAdapter = {
     const config = readJsonConfig(path);
     config.hooks = config.hooks ?? {};
 
-    addHook(config.hooks, "beforeSubmitPrompt", "waitplay hook working cursor");
-    addHook(config.hooks, "sessionEnd", "waitplay hook done cursor");
+    addHook(config.hooks, "beforeSubmitPrompt", "sidequest hook working cursor");
+    addHook(config.hooks, "sessionEnd", "sidequest hook done cursor");
     // No confirmed Cursor event maps cleanly to "waiting for permission" —
     // skipped rather than guessed.
 

@@ -9,6 +9,7 @@ import { getHighScore, maybeSaveHighScore } from "./highscore.js";
 import { playSfx, setSoundEnabled } from "./sound.js";
 import type { CommandResult } from "./runner.js";
 import { readStatus, heartbeatWatcher, type AgentStatus } from "./status.js";
+import { getTriviaQuestions } from "./games/data/opentdb.js";
 
 type RunOptions =
   | {
@@ -79,9 +80,14 @@ type Mode =
  * magenta/cyan/white/grey plus light/bright variants).
  */
 export function runGameUI(opts: RunOptions): void {
-  const screen = blessed.screen({ smartCSR: true, title: "waitplay" });
+  const screen = blessed.screen({ smartCSR: true, title: "sidequest" });
   const config = loadConfig();
   setSoundEnabled(config.sound);
+
+  // Kick off Trivia's live fetch immediately, before the user has even
+  // looked at the menu — by the time they navigate to it and pick it, it's
+  // usually already resolved (or well underway) instead of starting cold.
+  getTriviaQuestions().catch(() => {}); // failure handled by the game's own fallback path when it actually asks
 
   let commandFinished = false;
   let finishedResult: CommandResult | null = null;
@@ -92,7 +98,7 @@ export function runGameUI(opts: RunOptions): void {
     });
   }
 
-  const commandLabel = () => (opts.kind === "wrap" ? opts.commandLabel : liveStatusAgent ?? "your coding agent");
+  const commandLabel = () => (opts.kind === "wrap" ? opts.commandLabel : liveStatusAgent ?? "no agent connected");
 
   let mode: Mode = { kind: "menu", index: 0 };
   let tickTimer: ReturnType<typeof setInterval> | null = null;
@@ -204,7 +210,7 @@ export function runGameUI(opts: RunOptions): void {
       tags: true,
       align: "center",
       valign: "middle",
-      content: `${rainbowText("W A I T P L A Y")}\n{grey-fg}${opts.kind === "watch" ? "watching:" : "running:"} {/grey-fg}{cyan-fg}${escapeTags(commandLabel())}{/cyan-fg}${liveStatus ? "   " + STATUS_LABEL[liveStatus] : ""}`,
+      content: `${rainbowText("S I D E Q U E S T")}\n{grey-fg}${opts.kind === "watch" ? "watching:" : "running:"} {/grey-fg}{cyan-fg}${escapeTags(commandLabel())}{/cyan-fg}${liveStatus ? "   " + STATUS_LABEL[liveStatus] : ""}`,
       border: { type: "line" },
       style: { border: { fg: "magenta" } },
     });
@@ -469,8 +475,8 @@ export function runGameUI(opts: RunOptions): void {
 
   // --- single persistent key dispatcher ---
 
-  if (process.env.WAITPLAY_DEBUG) {
-    const dir = join(homedir(), ".waitplay");
+  if (process.env.SIDEQUEST_DEBUG) {
+    const dir = join(homedir(), ".sidequest");
     mkdirSync(dir, { recursive: true });
     const logPath = join(dir, "debug.log");
     screen.on("keypress", (ch: string, key: any) => {

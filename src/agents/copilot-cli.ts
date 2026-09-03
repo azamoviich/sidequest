@@ -20,7 +20,7 @@ export const copilotCliAdapter: AgentAdapter = {
     const config = readJsonConfig(path);
     config.hooks = config.hooks ?? [];
 
-    const command = "waitplay hook waiting copilot-cli";
+    const command = "sidequest hook waiting copilot-cli";
     if (!containsCommand(config.hooks, command)) {
       config.hooks.push({ event: "waiting_for_input", command });
     }

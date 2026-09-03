@@ -6,7 +6,7 @@ import type { InstallScope } from "./agents/types.js";
 export async function runSetupWizard(): Promise<void> {
   const rl = readline.createInterface({ input: stdin, output: stdout });
 
-  console.log("waitplay setup — wire your coding agent(s) so a game auto-opens while they work.\n");
+  console.log("sidequest setup — wire your coding agent(s) so a game auto-opens while they work.\n");
 
   const selected: typeof agents = [];
   for (const agent of agents) {
@@ -16,7 +16,7 @@ export async function runSetupWizard(): Promise<void> {
   }
 
   if (selected.length === 0) {
-    console.log("\nNothing selected. Run `waitplay setup` again anytime.");
+    console.log("\nNothing selected. Run `sidequest setup` again anytime.");
     rl.close();
     return;
   }
@@ -33,7 +33,7 @@ export async function runSetupWizard(): Promise<void> {
   }
 
   console.log(
-    "\nDone. Next time you prompt your agent, waitplay should auto-open a terminal with a game." +
+    "\nDone. Next time you prompt your agent, sidequest should auto-open a terminal with a game." +
       "\nOn macOS this opens Terminal.app automatically; elsewhere you'll get a manual command to run once per session."
   );
 
