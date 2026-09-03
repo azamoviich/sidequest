@@ -1,6 +1,6 @@
 import { writeStatus, isWatcherAlive, type AgentStatus } from "./status.js";
 import { openWatcherTerminal } from "./launch-terminal.js";
-import { captureOriginWindow, focusOriginWindow, focusWatcherWindow } from "./focus.js";
+import { captureOriginWindow, focusOriginWindowWithPrompt, focusWatcherWindow } from "./focus.js";
 import { loadConfig } from "./config.js";
 
 const VALID: AgentStatus[] = ["working", "waiting", "done"];
@@ -42,7 +42,9 @@ export function runHookCommand(args: string[]): void {
     }
   }
 
-  if (status === "done" || status === "waiting") {
-    focusOriginWindow();
+  if (status === "done") {
+    focusOriginWindowWithPrompt("Agent finished — opening in 3s");
+  } else if (status === "waiting") {
+    focusOriginWindowWithPrompt("Agent needs you — opening in 3s");
   }
 }

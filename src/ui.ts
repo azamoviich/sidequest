@@ -10,6 +10,7 @@ import { playSfx, setSoundEnabled } from "./sound.js";
 import type { CommandResult } from "./runner.js";
 import { readStatus, heartbeatWatcher, type AgentStatus } from "./status.js";
 import { getTriviaQuestions } from "./games/data/opentdb.js";
+import { LIBRARY_BOOKS } from "./games/data/gutendex.js";
 
 type RunOptions =
   | {
@@ -44,6 +45,10 @@ const GAME_THEME: Record<string, string> = {
   "coding-algorithms": "cyan",
   "coding-git": "cyan",
 };
+
+for (const book of LIBRARY_BOOKS) {
+  GAME_THEME[`library-${book.id}`] = "magenta";
+}
 
 const RAINBOW = ["red", "yellow", "green", "cyan", "blue", "magenta"];
 
@@ -517,6 +522,9 @@ export function runGameUI(opts: RunOptions): void {
       width: GAME_BOX_WIDTH,
       height: 20,
       tags: true,
+      valign: "middle", // content (e.g. Snake's 16-row grid) is shorter than
+      // the 20-row box — center it vertically instead of pinning it to the
+      // top with dead space below.
       border: { type: "line" },
       style: { border: { fg: color } },
     });

@@ -87,6 +87,48 @@ export function focusOriginWindow(): void {
   focusWindow(ORIGIN_FILE);
 }
 
+/**
+ * Same as focusOriginWindow(), but shows a small popup first: "Agent
+ * finished — opening in 3s" with Postpone / Open Now buttons. Clicking
+ * Postpone skips the focus-switch this time; clicking Open Now or just
+ * letting the 3s countdown run out both trigger it. Real macOS Notification
+ * Center banners can't carry custom action buttons without a registered app
+ * bundle, so `display dialog` (a small modal popup, not a notification
+ * banner) is the closest thing actually scriptable from a CLI hook.
+ */
+export function focusOriginWindowWithPrompt(message: string): void {
+  if (process.platform !== "darwin") return;
+  try {
+    if (!existsSync(ORIGIN_FILE)) return;
+    const { terminal, windowId } = JSON.parse(readFileSync(ORIGIN_FILE, "utf8"));
+    if (!windowId) return;
+
+    const focusCmd =
+      terminal === "iTerm.app"
+        ? `tell application "iTerm"
+            activate
+            repeat with w in windows
+              if id of w is ${windowId} then select w
+            end repeat
+          end tell`
+        : `tell application "Terminal"
+            activate
+            set index of window id ${windowId} to 1
+          end tell`;
+
+    const escapedMessage = message.replace(/"/g, '\\"');
+    const script = `
+      set dlgResult to display dialog "${escapedMessage}" with title "sidequest" buttons {"Postpone", "Open Now"} default button "Open Now" giving up after 3
+      if (gave up of dlgResult) or (button returned of dlgResult is "Open Now") then
+        ${focusCmd}
+      end if
+    `;
+    spawn("osascript", ["-e", script], { stdio: "ignore", detached: true }).unref();
+  } catch {
+    // the window may have been closed since — nothing to focus
+  }
+}
+
 /** Called by `sidequest watch` itself at startup, so later hook events can bring THIS window forward. */
 export function captureWatcherWindow(): void {
   captureFrontWindow(WATCHER_FILE);
