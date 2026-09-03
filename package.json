@@ -1,6 +1,6 @@
 {
   "name": "sidequest-cli",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "Play a terminal game while any slow command runs. Wrap Claude Code, npm install, docker build — anything.",
   "type": "module",
   "bin": {
