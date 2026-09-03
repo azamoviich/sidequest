@@ -329,12 +329,13 @@ export function runGameUI(opts: RunOptions): void {
       top: 5,
       left: "center",
       width: CONTENT_WIDTH,
-      // rows are double-spaced ("\n\n" between each), so (menuEntries +
-      // settings) entries need 2*entries-1 content lines, plus 2 for the
-      // border and 2 for vertical padding. Too short here silently clips the
-      // bottom rows instead of erroring — that's what ate History/Settings
-      // off-screen before this was computed correctly.
-      height: 2 * (menuEntries.length + 1) + 5,
+      // single-line rows now (menuEntries + settings entries), plus 2 for
+      // the border and 2 for vertical padding, +1 buffer. Rows used to be
+      // double-spaced, which made this box roughly double the terminal's
+      // actual height once the menu grew past ~10 entries — the box was
+      // taller than the screen itself, so its bottom (including the
+      // Settings row) rendered past the visible viewport instead of erroring.
+      height: menuEntries.length + 1 + 5,
       tags: true,
       padding: { left: 2, right: 2, top: 1, bottom: 1 },
       border: { type: "line" },
@@ -384,7 +385,7 @@ export function runGameUI(opts: RunOptions): void {
     const settingsLabel = `Settings  {grey-fg}sound: ${config.sound ? "on" : "off"}, difficulty: ${config.difficulty}{/grey-fg}`;
     rows.push(settingsSelected ? `{inverse}{bold} ⚙ ${settingsLabel} {/bold}{/inverse}` : ` ⚙ ${settingsLabel}`);
 
-    menuBody!.setContent(rows.join("\n\n"));
+    menuBody!.setContent(rows.join("\n"));
     screen.render();
   }
 
@@ -411,7 +412,7 @@ export function runGameUI(opts: RunOptions): void {
       top: 4,
       left: "center",
       width: CONTENT_WIDTH,
-      height: 2 * (group.games.length + 1) + 5,
+      height: group.games.length + 1 + 5,
       tags: true,
       padding: { left: 2, right: 2, top: 1, bottom: 1 },
       border: { type: "line" },
@@ -451,7 +452,7 @@ export function runGameUI(opts: RunOptions): void {
     });
     rows.push(m.index === m.group.games.length ? "{inverse}{bold} ← Back {/bold}{/inverse}" : " ← Back");
 
-    submenuBody!.setContent(rows.join("\n\n"));
+    submenuBody!.setContent(rows.join("\n"));
     screen.render();
   }
 
@@ -482,7 +483,7 @@ export function runGameUI(opts: RunOptions): void {
       // 5 rows (sound, difficulty, auto-open, run setup, back), double-spaced
       // — same undercounting mistake bit the main menu once already, so this
       // is deliberately generous rather than exactly-computed.
-      height: 2 * SETTINGS_ROW_COUNT + 5,
+      height: SETTINGS_ROW_COUNT + 5,
       tags: true,
       padding: { left: 2, right: 2, top: 1, bottom: 1 },
       border: { type: "line" },
@@ -516,7 +517,7 @@ export function runGameUI(opts: RunOptions): void {
       "Back",
     ];
     const styled = rows.map((r, i) => (mode.kind === "settings" && mode.index === i ? `{inverse}{bold} > ${r} {/bold}{/inverse}` : `   ${r}`));
-    settingsBody!.setContent(styled.join("\n\n"));
+    settingsBody!.setContent(styled.join("\n"));
     screen.render();
   }
 
