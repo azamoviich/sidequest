@@ -12,7 +12,8 @@
   "scripts": {
     "build": "tsc -p .",
     "dev": "tsx src/cli.ts",
-    "test": "vitest run"
+    "test": "vitest run",
+    "postinstall": "node scripts/postinstall.mjs"
   },
   "keywords": [
     "cli",
