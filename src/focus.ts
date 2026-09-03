@@ -7,22 +7,22 @@ const FILE = join(homedir(), ".sidequest", "origin-window.json");
 
 type SupportedTerminal = "Apple_Terminal" | "iTerm.app";
 
-function detectTerminal(): SupportedTerminal | null {
-  const t = process.env.TERM_PROGRAM;
-  if (t === "Apple_Terminal" || t === "iTerm.app") return t;
-  return null;
+// TERM_PROGRAM isn't reliably present in a hook subprocess's environment
+// (confirmed empty in testing) — an unrecognized/missing value defaults to
+// Terminal.app rather than silently doing nothing, same reasoning as
+// launch-terminal.ts.
+function detectTerminal(): SupportedTerminal {
+  return process.env.TERM_PROGRAM === "iTerm.app" ? "iTerm.app" : "Apple_Terminal";
 }
 
 /**
  * Records which terminal window was frontmost right before we open the
  * watcher window — that's assumed to be the one running the coding agent,
- * since the user just typed a prompt into it. macOS + Terminal.app/iTerm2
- * only (detected via TERM_PROGRAM); a no-op everywhere else.
+ * since the user just typed a prompt into it. macOS + Terminal.app/iTerm2 only.
  */
 export function captureOriginWindow(): void {
   if (process.platform !== "darwin") return;
   const terminal = detectTerminal();
-  if (!terminal) return;
 
   try {
     if (terminal === "iTerm.app") {

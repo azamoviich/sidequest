@@ -2,11 +2,16 @@ import { spawn } from "node:child_process";
 
 type SupportedTerminal = "Apple_Terminal" | "iTerm.app";
 
-/** TERM_PROGRAM is the standard env var terminal emulators set to identify themselves. */
-function detectTerminal(): SupportedTerminal | null {
-  const t = process.env.TERM_PROGRAM;
-  if (t === "Apple_Terminal" || t === "iTerm.app") return t;
-  return null;
+/**
+ * TERM_PROGRAM is the standard env var terminal emulators set to identify
+ * themselves — but it isn't reliably present in a hook subprocess's
+ * environment (confirmed empty in testing), so an unrecognized/missing value
+ * defaults to Terminal.app rather than silently doing nothing. That's the
+ * right default on macOS: Terminal.app is the one every Mac has, and a wrong
+ * guess here just opens the wrong terminal app instead of failing silently.
+ */
+function detectTerminal(): SupportedTerminal {
+  return process.env.TERM_PROGRAM === "iTerm.app" ? "iTerm.app" : "Apple_Terminal";
 }
 
 function scriptFor(terminal: SupportedTerminal, command: string): string {
@@ -37,7 +42,7 @@ export function openWatcherTerminal(): { launched: boolean; instructions?: strin
   const cliPath = process.argv[1]; // this file's own CLI entry, re-invoked with "watch"
   const terminal = detectTerminal();
 
-  if (process.platform === "darwin" && terminal) {
+  if (process.platform === "darwin") {
     const script = scriptFor(terminal, `node '${cliPath}' watch`);
     try {
       spawn("osascript", ["-e", script], { stdio: "ignore", detached: true }).unref();
