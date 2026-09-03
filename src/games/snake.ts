@@ -10,6 +10,7 @@ export const snakeGame: Game<SnakeState> = {
   id: "snake",
   title: "Snake",
   tickIntervalMs: null, // set dynamically via tickIntervalMsFor(); runner reads once at start
+  pauseWhileAgentBusy: true, // otherwise it keeps moving/dying while you're not looking
 
   init(ctx: GameContext) {
     return createSnakeState(GRID_W, GRID_H, ctx.rng);

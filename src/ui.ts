@@ -192,9 +192,12 @@ export function runGameUI(opts: RunOptions): void {
       flashUntil: 0,
     };
     tickSecondCounter = 0;
-    // Watch mode: if the agent is already waiting/done when you pick a game,
-    // start paused rather than ticking a game nobody asked to run yet.
-    if (opts.kind !== "watch" || liveStatus === "working" || liveStatus === null) {
+    // Watch mode: if the agent is already waiting/done when you pick a
+    // pausable game (Snake), start paused rather than ticking a game nobody
+    // asked to run yet. Non-pausable games (quizzes) always start ticking —
+    // see Game.pauseWhileAgentBusy.
+    const startsPaused = opts.kind === "watch" && game.pauseWhileAgentBusy && liveStatus !== "working" && liveStatus !== null;
+    if (!startsPaused) {
       startGameTickLoop();
     }
     renderGame();
@@ -701,7 +704,7 @@ export function runGameUI(opts: RunOptions): void {
         liveStatus = newStatus;
         liveStatusAgent = newAgent;
 
-        if (mode.kind === "game") {
+        if (mode.kind === "game" && mode.game.pauseWhileAgentBusy) {
           const shouldPause = newStatus === "waiting" || newStatus === "done";
           if (shouldPause) stopGameTickLoop();
           else if (wasPausable && newStatus === "working") startGameTickLoop();
